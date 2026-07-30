@@ -6,13 +6,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
-    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
-    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "dev": "next dev",
+    "build": "next build",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
-    "lint": "oxlint app worker.ts vite.config.ts tests --deny-warnings && tsc --noEmit",
-    "deploy:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json",
-    "deploy:cloudflare:dry-run": "npm run build && wrangler deploy --dry-run --config dist/server/wrangler.json"
+    "lint": "oxlint app next.config.ts tests --deny-warnings && tsc --noEmit"
   },
   "dependencies": {
     "next": "16.2.12",
@@ -20,20 +17,13 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.47.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "6.0.4",
-    "@vitejs/plugin-rsc": "0.5.30",
     "oxlint": "1.75.0",
-    "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.2.1",
-    "typescript": "5.9.3",
-    "vinext": "0.0.50",
-    "vite": "8.1.5",
-    "wrangler": "4.114.0"
+    "typescript": "5.9.3"
   },
   "overrides": {
     "postcss": "8.5.23",

@@ -56,7 +56,6 @@ Run all of these before opening a pull request:
 npm ci
 npm run lint
 npm test
-npm run deploy:cloudflare:dry-run
 git diff --check
 ```
 
@@ -71,7 +70,7 @@ clean after an accepted release.
   that standing policy and all required checks pass.
 - New claims, cases, pages, features, dependencies, workflows, security rules,
   legal text, domains or deployment configuration require human approval.
-- Production credentials belong only in the GitHub `production` environment;
-  never expose them to OpenClaw or commit them.
+- The Azure Static Web Apps deployment token belongs only in the GitHub
+  `production` environment; never expose it to OpenClaw or commit it.
 - Production deployment occurs from protected `main` after CI. Do not deploy an
   unreviewed branch directly.

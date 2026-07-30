@@ -4,48 +4,22 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-async function render(path = "/") {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${path}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request(new URL(path, "https://agilaconsult.com"), {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
+async function exportedHtml(name) {
+  return readFile(new URL(`../out/${name}`, import.meta.url), "utf8");
 }
 
-test("server-renders the production homepage and metadata", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
-  assert.equal(response.headers.get("x-frame-options"), "DENY");
-  assert.match(
-    response.headers.get("content-security-policy") ?? "",
-    /frame-ancestors 'none'/,
-  );
-  assert.match(
-    response.headers.get("strict-transport-security") ?? "",
-    /max-age=31536000/,
-  );
+test("exports the production homepage and metadata", async () => {
+  const html = await exportedHtml("index.html");
 
-  const html = await response.text();
   assert.match(html, /Agila \| AI-central, architecture-led transformation/);
   assert.match(html, /From AI ambition to working systems\./);
   assert.match(html, /AI value depends on the system around it\./);
   assert.match(html, /pre-accredited by Luxinnovation/);
   assert.match(html, /alejandro\.simo@agilaconsult\.com/);
-  assert.match(html, /mailto:alejandro\.simo%40agilaconsult\.com|mailto:alejandro\.simo@agilaconsult\.com/);
+  assert.match(
+    html,
+    /mailto:alejandro\.simo%40agilaconsult\.com|mailto:alejandro\.simo@agilaconsult\.com/,
+  );
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
   assert.match(html, /application\/ld\+json/);
@@ -56,30 +30,38 @@ test("server-renders the production homepage and metadata", async () => {
   assert.doesNotMatch(html, /world-class|revolutionary|cutting-edge/i);
 });
 
-test("server-renders the legal and privacy notice", async () => {
-  const response = await render("/legal");
-  assert.equal(response.status, 200);
-  const html = await response.text();
+test("exports the legal and privacy notice", async () => {
+  const html = await exportedHtml("legal/index.html");
+
   assert.match(html, /Legal notice &amp; privacy/);
   assert.match(html, /B295954/);
   assert.match(html, /LU36614487/);
   assert.match(html, /does not use advertising trackers/);
+  assert.match(html, /Microsoft Azure/);
   assert.match(html, /Commission nationale pour la protection des données/);
+  assert.doesNotMatch(html, /Cloudflare/);
 });
 
-test("ships final brand and discovery assets without the starter preview", async () => {
-  const [packageJson, robots, sitemap, blackLogo, whiteLogo] = await Promise.all([
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readFile(new URL("../public/robots.txt", import.meta.url), "utf8"),
-    readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8"),
-    readFile(new URL("../public/agila-wordmark-black.svg", import.meta.url), "utf8"),
-    readFile(new URL("../public/agila-wordmark-white.svg", import.meta.url), "utf8"),
-  ]);
+test("ships Azure configuration, brand and discovery assets", async () => {
+  const [configText, packageJson, robots, sitemap, blackLogo, whiteLogo] =
+    await Promise.all([
+      readFile(new URL("../out/staticwebapp.config.json", import.meta.url), "utf8"),
+      readFile(new URL("../package.json", import.meta.url), "utf8"),
+      readFile(new URL("../out/robots.txt", import.meta.url), "utf8"),
+      readFile(new URL("../out/sitemap.xml", import.meta.url), "utf8"),
+      readFile(new URL("../out/agila-wordmark-black.svg", import.meta.url), "utf8"),
+      readFile(new URL("../out/agila-wordmark-white.svg", import.meta.url), "utf8"),
+    ]);
+  const config = JSON.parse(configText);
 
-  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  assert.match(config.globalHeaders["Content-Security-Policy"], /frame-ancestors 'none'/);
+  assert.match(config.globalHeaders["Strict-Transport-Security"], /max-age=31536000/);
+  assert.equal(config.globalHeaders["X-Frame-Options"], "DENY");
+  assert.doesNotMatch(packageJson, /wrangler|vinext|cloudflare/i);
   assert.match(robots, /Allow: \//);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
+  await access(new URL("../out/404.html", import.meta.url));
   await assert.rejects(access(new URL("app/_sites-preview", root)));
 });

@@ -41,16 +41,17 @@ test("server-renders the production homepage and metadata", async () => {
 
   const html = await response.text();
   assert.match(html, /Agila \| AI-central, architecture-led transformation/);
-  assert.match(
-    html,
-    /From AI ambition to governed systems and executable change\./,
-  );
+  assert.match(html, /From AI ambition to working systems\./);
   assert.match(html, /AI value depends on the system around it\./);
   assert.match(html, /pre-accredited by Luxinnovation/);
   assert.match(html, /alejandro\.simo@agilaconsult\.com/);
+  assert.match(html, /mailto:alejandro\.simo%40agilaconsult\.com|mailto:alejandro\.simo@agilaconsult\.com/);
+  assert.match(html, /Assess the current situation/);
+  assert.match(html, /Support and improve/);
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Agila Consulting S\.à r\.l\./);
-  assert.match(html, /og\.png/);
+  assert.doesNotMatch(html, /Transformation architecture|map-pulse|delivery system/i);
+  assert.doesNotMatch(html, /Start with the decision|Frame the decision/i);
   assert.doesNotMatch(html, /codex-preview|loading skeleton|placeholder/i);
   assert.doesNotMatch(html, /world-class|revolutionary|cutting-edge/i);
 });
@@ -80,6 +81,5 @@ test("ships final brand and discovery assets without the starter preview", async
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
-  await access(new URL("../public/og.png", import.meta.url));
   await assert.rejects(access(new URL("app/_sites-preview", root)));
 });

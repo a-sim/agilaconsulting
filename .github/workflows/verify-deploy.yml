@@ -32,6 +32,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Lint source
         run: npm run lint
 
@@ -43,18 +46,6 @@ jobs:
 
       - name: Check whitespace errors
         run: git diff --check
-
-  dependency-review:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@v4
 
   deploy:
     needs: verify

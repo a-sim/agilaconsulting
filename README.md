@@ -58,7 +58,8 @@ metadata, legal information, security headers and final brand assets.
 ## Publishing
 
 Pushing to `main` runs verification and deploys the validated source through
-GitHub Actions when the following production environment secrets exist:
+GitHub Actions when the repository variable `CLOUDFLARE_DEPLOY_ENABLED` is
+`true` and the following production environment secrets exist:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`

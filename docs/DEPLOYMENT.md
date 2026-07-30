@@ -36,11 +36,14 @@ or email subscription.
    - `CLOUDFLARE_ACCOUNT_ID`
 5. Optionally add the repository variable `PRODUCTION_URL` after the custom
    domain is live. The workflow will then perform a post-deploy HTTP check.
-6. Merge the validated site into `main` and confirm the Worker deployment on its
+6. Add the repository variable `CLOUDFLARE_DEPLOY_ENABLED` with the exact value
+   `true` only after both secrets are configured.
+7. Merge the validated site into `main` and confirm the Worker deployment on its
    `workers.dev` URL.
 
-The workflow fails when Cloudflare credentials are missing. OpenClaw never
-needs either credential.
+The deploy job stays intentionally disabled until the enablement variable is
+set. Once enabled, it fails closed when either Cloudflare credential is missing.
+OpenClaw never needs either credential.
 
 ## 2. Inventory Microsoft DNS before any nameserver change
 

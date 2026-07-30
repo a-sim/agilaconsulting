@@ -55,8 +55,8 @@ export default function LegalPage() {
               <h2>Publisher and legal identification</h2>
               <p>
                 This website is published by Agila Consulting S.à r.l., a
-                Luxembourg private limited liability company trading publicly
-                under the brand Agila.
+                Luxembourg private limited liability company operating as
+                Agila.
               </p>
               <dl>
                 <div>

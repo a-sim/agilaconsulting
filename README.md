@@ -1,7 +1,7 @@
 # Agila website
 
-Production website for [Agila](https://agilaconsult.com), the public brand of
-Agila Consulting S.à r.l.
+Production website for [Agila](https://agilaconsult.com), operated by Agila
+Consulting S.à r.l.
 
 The site presents Agila as an AI-central, architecture-led transformation
 practice. It is built around the approved 2026 positioning, brand system and
@@ -19,8 +19,8 @@ reference to Luxinnovation's Fit 4 AI programme.
 
 The public routes are:
 
-- `/` - positioning, capabilities, approach, delivery model, experience, Fit 4
-  AI, founder and contact
+- `/` - positioning, capabilities, approach, experience, Fit 4 AI, founder and
+  contact
 - `/legal` - legal notice and privacy information
 
 ## Editing content

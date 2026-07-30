@@ -112,7 +112,6 @@ export default function Home() {
       <main id="main-content">
         <section className="hero section-shell" id="top">
           <div className="hero-heading">
-            <p className="eyebrow">AI-central, architecture-led transformation</p>
             <h1>From AI ambition to working systems.</h1>
           </div>
           <div className="hero-support">

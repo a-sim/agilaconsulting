@@ -1,0 +1,10 @@
+* @a-sim
+
+/app/content.ts @a-sim
+/app/legal/ @a-sim
+/.github/ @a-sim
+/AGENTS.md @a-sim
+/docs/ @a-sim
+/package.json @a-sim
+/package-lock.json @a-sim
+/worker/ @a-sim

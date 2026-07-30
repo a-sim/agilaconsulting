@@ -19,7 +19,8 @@ Create a dedicated `agila-web` agent or skill with:
   OneDrive access;
 - a repo-scoped GitHub App, or an expiring fine-grained token with only Contents
   and Pull Requests write plus Actions read;
-- no Administration, Secrets, Environments, Workflows or Cloudflare permission;
+- no Administration, Secrets, Environments, Workflows or production-hosting
+  permission;
 - branch names in the form `openclaw/<short-topic>`;
 - a deterministic receipt recording request, files, tests, commit, PR and final
   result.
@@ -44,7 +45,7 @@ git fetch origin
 npm ci
 npm run lint
 npm test
-npm run deploy:cloudflare:dry-run
+npm run build
 git diff --check
 ```
 
@@ -86,7 +87,7 @@ paths. AI-generated approval is not a substitute for human approval.
 ## Failure rules
 
 - Never force-push or bypass required checks.
-- Never deploy directly with Wrangler.
+- Never deploy outside the protected GitHub production workflow.
 - Never print or request a production secret.
 - Never broaden a typo request into a redesign.
 - Never infer publication permission from a private source or public company

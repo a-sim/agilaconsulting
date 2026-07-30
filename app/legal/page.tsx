@@ -114,9 +114,9 @@ export default function LegalPage() {
                 cookies, account registration or a contact form. The hosting and
                 security infrastructure may process limited technical request
                 data, such as IP address, time, requested resource and browser
-                information, to deliver and protect the website. Cloudflare acts
-                as a technical service provider for this purpose. Email is
-                processed through Microsoft 365.
+                information, to deliver and protect the website. Microsoft Azure
+                acts as a technical service provider for website hosting and
+                security delivery. Email is processed through Microsoft 365.
               </p>
               <p>
                 Correspondence is retained only for as long as reasonably

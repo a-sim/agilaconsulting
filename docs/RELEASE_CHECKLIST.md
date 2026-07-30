@@ -22,13 +22,13 @@
 - [ ] `npm ci`
 - [ ] `npm run lint`
 - [ ] `npm test`
-- [ ] `npm run deploy:cloudflare:dry-run`
+- [ ] `npm run build`
 - [ ] `git diff --check`
 - [ ] Pull-request checks pass from a clean branch based on `origin/main`.
 
 ## Production
 
-- [ ] Worker deployment succeeds from protected `main`.
+- [ ] Azure Static Web Apps deployment succeeds from protected `main`.
 - [ ] Apex returns 200 over HTTPS and `www` redirects permanently.
 - [ ] Security headers, `/legal`, robots, sitemap and security contact resolve.
 - [ ] Microsoft 365 mail and domain health are unaffected.

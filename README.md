@@ -10,10 +10,10 @@ reference to Luxinnovation's Fit 4 AI programme.
 
 ## Architecture
 
-- Next.js-compatible app router through Vinext
+- Next.js App Router with static HTML export
 - React and TypeScript
-- Cloudflare Worker with server-rendered HTML and static assets
-- GitHub Actions verification and deployment
+- Azure Static Web Apps with managed HTTPS and static assets
+- GitHub Actions verification and Azure deployment
 - No database, CMS, analytics, cookies or contact backend in the first release
 - Direct email contact to avoid collecting website form data
 
@@ -49,7 +49,6 @@ The development server normally opens at `http://localhost:3000`.
 ```bash
 npm run lint
 npm test
-npm run deploy:cloudflare:dry-run
 ```
 
 `npm test` creates the production build and verifies rendered content,
@@ -57,20 +56,20 @@ metadata, legal information, security headers and final brand assets.
 
 ## Publishing
 
-Pushing to `main` runs verification and deploys the validated source through
-GitHub Actions when the repository variable `CLOUDFLARE_DEPLOY_ENABLED` is
-`true` and the following production environment secrets exist:
+Pushing to `main` runs verification and deploys the validated static export to
+Azure Static Web Apps when the repository variable
+`AZURE_STATIC_WEB_APPS_DEPLOY_ENABLED` is `true` and the following production
+environment secret exists:
 
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+- `AZURE_STATIC_WEB_APPS_API_TOKEN`
 
-The deployment token should be limited to the relevant Cloudflare account and
-Worker. Custom domains are configured once in Cloudflare and are not recreated
-during routine deployments.
+The deployment token is scoped to the Agila Static Web App. The apex and `www`
+custom domains are configured once in Azure and are not recreated during
+routine deployments.
 
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the Cloudflare and Microsoft
-365 DNS cutover, and [`docs/OPENCLAW.md`](docs/OPENCLAW.md) for safe AI-authored
-updates.
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the Azure Static Web Apps and
+Microsoft 365 DNS runbook, and [`docs/OPENCLAW.md`](docs/OPENCLAW.md) for safe
+AI-authored updates.
 
 ## Repository policy
 

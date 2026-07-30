@@ -2,11 +2,11 @@
 
 ## Decision
 
-The first production release uses a server-rendered React application deployed
-as a Cloudflare Worker with static assets. It preserves the strongest wedding
-site patterns, such as typed content, Git-based publishing, Cloudflare delivery
-and deterministic CI, while improving SEO, security headers, canonical routing
-and fail-closed deployment.
+The production site is a static Next.js export hosted by Azure Static Web Apps.
+Microsoft continues to register the domain, host its authoritative DNS and
+provide Microsoft 365 email. Only the apex and `www` website records point to
+Azure; the existing email, Teams, device-enrollment and CRM records are left
+unchanged.
 
 No backend is needed in this iteration. Direct email is the contact path, Git is
 the content system, and the public site stores no visitor data.
@@ -17,22 +17,22 @@ the content system, and the public site stores no visitor data.
 flowchart LR
   A["Alejandro, Codex or OpenClaw"] --> B["Short-lived Git branch"]
   B --> C["Pull request"]
-  C --> D["Lint, rendered tests, build and dry-run"]
+  C --> D["Audit, lint, rendered tests and static build"]
   D --> E["Protected main"]
   E --> F["GitHub production environment"]
-  F --> G["Cloudflare Worker"]
+  F --> G["Azure Static Web Apps"]
   G --> H["agilaconsult.com"]
+  I["Microsoft-hosted DNS"] --> H
+  I --> J["Microsoft 365 and CRM records"]
 ```
 
 ## Runtime
 
-- Vinext compiles the Next.js-compatible app router to Cloudflare-compatible
-  ESM.
-- The Worker server-renders the home and legal routes and serves fingerprinted
-  client assets.
-- The Worker adds content security, clickjacking, MIME, referrer, browser
-  feature and transport headers.
-- Content-hashed assets are cached immutably; HTML revalidates.
+- Next.js exports the home, legal and not-found pages to the `out` directory.
+- Azure Static Web Apps serves the static pages and fingerprinted client assets.
+- `public/staticwebapp.config.json` defines routing, caching and browser-security
+  headers at the Azure edge.
+- Content-hashed assets are cached immutably.
 - Search discovery uses canonical metadata, Open Graph, JSON-LD, `robots.txt`
   and `sitemap.xml`.
 
@@ -51,7 +51,9 @@ need a higher approval threshold than marketing copy.
 - No browser analytics or advertising tags
 - No cookies, sign-in, database, form submission or public API
 - No external font request at runtime
-- CSP, HSTS, frame denial, referrer and permissions policies at the Worker edge
+- CSP, HSTS, frame denial, referrer and permissions policies at the Azure edge
+- HSTS intentionally excludes `includeSubDomains`, so deployment cannot impose
+  transport policy on Microsoft 365, CRM or other independent subdomains
 - Public-repository instructions prevent client, financial, CRM and evidence
   data from entering the repository
 - Production credentials isolated in the GitHub `production` environment

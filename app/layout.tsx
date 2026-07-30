@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | Agila",
   },
   description:
-    "Agila helps organisations turn complex operations, fragmented data and AI ambition into governed systems and executable change.",
+    "Agila helps organisations assess complex transformations, design target systems, select technology and support implementation across AI, data and industrial operations.",
   applicationName: "Agila",
   authors: [{ name: "Agila Consulting S.à r.l." }],
   creator: "Agila",
@@ -51,22 +51,13 @@ export const metadata: Metadata = {
     siteName: "Agila",
     title: "Agila | AI-central, architecture-led transformation",
     description:
-      "From AI ambition to governed systems and executable change.",
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: "Agila: From AI ambition to governed systems and executable change.",
-      },
-    ],
+      "From AI ambition to working systems.",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Agila | AI-central, architecture-led transformation",
     description:
-      "From AI ambition to governed systems and executable change.",
-    images: ["/og.png"],
+      "From AI ambition to working systems.",
   },
 };
 

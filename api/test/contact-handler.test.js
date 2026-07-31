@@ -99,7 +99,33 @@ test("uses the trusted Azure client address for pseudonymous limits", async () =
   assert.equal(result.status, 202);
   assert.equal(
     reservedSourceKey,
-    pseudonymousKey("a-long-random-secret", "198.51.100.24"),
+    pseudonymousKey("a-long-random-secret", "address:198.51.100.24"),
+  );
+});
+
+test("falls back to the validated email when Azure omits client headers", async () => {
+  let reservedSourceKey = "";
+  const deps = dependencies({
+    limiter: {
+      reserve: async ({ sourceKey }) => {
+        reservedSourceKey = sourceKey;
+        return { allowed: true, duplicate: false, reservations: [] };
+      },
+      markSent: async () => {},
+      release: async () => {},
+    },
+  });
+  const handler = createContactHandler(deps.values);
+  const result = await handler(
+    request(validPayload, {
+      headers: { "x-client-ip": "", "x-forwarded-for": "" },
+    }),
+  );
+
+  assert.equal(result.status, 202);
+  assert.equal(
+    reservedSourceKey,
+    pseudonymousKey("a-long-random-secret", "email:visitor@example.com"),
   );
 });
 

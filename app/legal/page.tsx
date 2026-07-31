@@ -108,9 +108,11 @@ export default function LegalPage() {
                 The form collects your name, email address and message, and your
                 organisation if you choose to provide it. It also processes the
                 submission time and limited technical or security data, such as
-                a pseudonymous derivative of an IP address, to operate and
-                protect the form. Name, email address and message are required
-                to submit an online enquiry; organisation is optional.
+                a pseudonymous derivative of an IP address or, when that is not
+                available from the hosting platform, the submitted email
+                address, to operate and protect the form. Name, email address
+                and message are required to submit an online enquiry;
+                organisation is optional.
               </p>
               <p>
                 Agila uses this information to respond to your enquiry,

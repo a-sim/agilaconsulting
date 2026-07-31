@@ -58,7 +58,7 @@ locations:
    `agila-contact` and container `rate-limits`, partition key
    `/partitionKey`, with TTL enabled.
 
-Use the Azure-managed `DoNotReply@…azurecomm.net` sender for the initial release.
+Use the Azure-managed `donotreply@…azurecomm.net` sender for the initial release.
 This avoids modifying Agila's Microsoft 365 SPF and DKIM records. Add the
 following encrypted Static Web Apps application settings:
 
@@ -81,7 +81,7 @@ Confirm the generated Azure hostname serves:
 - `/robots.txt`
 - `/sitemap.xml`
 - `/.well-known/security.txt`, if present
-- `/api/contact` returns HTTP 405 with `Allow: POST`
+- `/api/contact` returns HTTP 405 to a GET probe
 
 Check the generated site for correct metadata, security headers, local fonts
 and brand assets. Do not add custom-domain records before the generated hostname

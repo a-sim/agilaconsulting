@@ -26,6 +26,12 @@ function response(status, body, extraHeaders = {}) {
 }
 
 function sourceAddress(request) {
+  const clientAddress =
+    request.headers.get("x-client-ip") ?? request.headers.get("client-ip");
+  if (clientAddress?.trim()) {
+    return clientAddress.trim();
+  }
+
   const forwarded = request.headers.get("x-forwarded-for");
   return forwarded?.split(",").at(-1)?.trim() ?? "";
 }

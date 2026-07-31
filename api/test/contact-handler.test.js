@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createContactHandler } from "../src/contact-handler.js";
+import { pseudonymousKey } from "../src/contact-message.js";
 
 const validPayload = {
   name: "Site Visitor",
@@ -71,6 +72,35 @@ test("accepts one valid enquiry with fixed delivery fields", async () => {
   assert.equal(deps.sent[0][0].recipients.replyTo[0].address, "visitor@example.com");
   assert.equal(deps.sent[0][1], validPayload.submissionId);
   assert.equal(deps.logs.some((entry) => /Site Visitor|visitor@example/.test(entry)), false);
+});
+
+test("uses the trusted Azure client address for pseudonymous limits", async () => {
+  let reservedSourceKey = "";
+  const deps = dependencies({
+    limiter: {
+      reserve: async ({ sourceKey }) => {
+        reservedSourceKey = sourceKey;
+        return { allowed: true, duplicate: false, reservations: [] };
+      },
+      markSent: async () => {},
+      release: async () => {},
+    },
+  });
+  const handler = createContactHandler(deps.values);
+  const result = await handler(
+    request(validPayload, {
+      headers: {
+        "x-client-ip": "198.51.100.24",
+        "x-forwarded-for": "203.0.113.99, 10.0.0.1",
+      },
+    }),
+  );
+
+  assert.equal(result.status, 202);
+  assert.equal(
+    reservedSourceKey,
+    pseudonymousKey("a-long-random-secret", "198.51.100.24"),
+  );
 });
 
 test("silently accepts honeypot submissions without sending", async () => {

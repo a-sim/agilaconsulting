@@ -1,19 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ContactForm } from "./components/contact-form";
+import { MobileMenu } from "./components/mobile-menu";
 import {
   capabilities,
   experience,
+  mailtoHref,
   method,
   navigation,
-  outlookComposeHref,
   site,
 } from "./content";
 
-const contactHref = outlookComposeHref({
+const contactHref = "#contact";
+const emailHref = mailtoHref({
   subject: "A transformation challenge",
   body: "Hello Alejandro,\n\nI would like to discuss the following transformation challenge:\n\n",
 });
-const emailHref = outlookComposeHref();
 
 const organisationSchema = {
   "@context": "https://schema.org",
@@ -90,31 +92,11 @@ export default function Home() {
             </a>
           ))}
         </nav>
-        <a
-          className="header-contact"
-          href={contactHref}
-          target="_blank"
-          rel="noreferrer"
-        >
+        <a className="header-contact" href={contactHref}>
           Discuss a challenge
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">↓</span>
         </a>
-        <details className="mobile-menu">
-          <summary aria-label="Open navigation">
-            <span />
-            <span />
-          </summary>
-          <nav aria-label="Mobile navigation">
-            {navigation.map((item) => (
-              <a key={item.href} href={item.href}>
-                {item.label}
-              </a>
-            ))}
-            <a href={contactHref} target="_blank" rel="noreferrer">
-              Discuss a challenge
-            </a>
-          </nav>
-        </details>
+        <MobileMenu items={navigation} />
       </header>
 
       <main id="main-content">
@@ -133,11 +115,9 @@ export default function Home() {
               <a
                 className="button button-dark"
                 href={contactHref}
-                target="_blank"
-                rel="noreferrer"
               >
                 Discuss a challenge
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">↓</span>
               </a>
               <a className="text-link" href="#capabilities">
                 Explore capabilities
@@ -282,36 +262,24 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="contact-section" id="contact">
+        <section
+          className="contact-section"
+          id="contact"
+          aria-labelledby="contact-heading"
+        >
           <div className="section-shell contact-inner">
             <div className="contact-main">
-              <h2>Bring the challenge into focus.</h2>
+              <p className="section-index">07 / Contact</p>
+              <h2 id="contact-heading" tabIndex={-1}>
+                Bring the challenge into focus.
+              </h2>
               <p>
-                If AI ambitions, fragmented data or complex systems are slowing
-                a transformation, Agila can help assess the current situation,
-                design the target state, choose a practical path and support
-                implementation.
+                Tell Agila what you are trying to change and where progress is
+                getting stuck. Alejandro will review your enquiry and respond
+                directly.
               </p>
-              <div className="contact-actions">
-                <a
-                  className="button button-light"
-                  href={contactHref}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Email Alejandro
-                  <span aria-hidden="true">↗</span>
-                </a>
-                <a
-                  className="contact-email"
-                  href={emailHref}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {site.email}
-                </a>
-              </div>
             </div>
+            <ContactForm email={site.email} mailtoHref={emailHref} />
           </div>
         </section>
       </main>
@@ -323,9 +291,7 @@ export default function Home() {
           </a>
           <div className="footer-contact">
             <span>Contact</span>
-            <a href={emailHref} target="_blank" rel="noreferrer">
-              {site.email}
-            </a>
+            <a href={emailHref}>{site.email}</a>
           </div>
           <div className="footer-legal">
             <p>© {new Date().getFullYear()} Agila. All rights reserved.</p>

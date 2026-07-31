@@ -13,9 +13,12 @@ reference to Luxinnovation's Fit 4 AI programme.
 - Next.js App Router with static HTML export
 - React and TypeScript
 - Azure Static Web Apps with managed HTTPS and static assets
+- Managed Azure Functions contact API at `/api/contact`
+- Azure Communication Services Email for fixed-recipient delivery
+- Azure Cosmos DB TTL counters for durable abuse and spend limits
 - GitHub Actions verification and Azure deployment
-- No database, CMS, analytics, cookies or contact backend in the first release
-- Direct email contact to avoid collecting website form data
+- No CMS, analytics, advertising trackers, cookies or contact-form database
+- Standard `mailto:` and copy-address fallbacks when the form is unavailable
 
 The public routes are:
 
@@ -39,6 +42,7 @@ Node.js 24 is used in CI.
 
 ```bash
 npm ci
+npm ci --prefix api
 npm run dev
 ```
 
@@ -49,10 +53,13 @@ The development server normally opens at `http://localhost:3000`.
 ```bash
 npm run lint
 npm test
+npm test --prefix api
 ```
 
-`npm test` creates the production build and verifies rendered content,
-metadata, legal information, security headers and final brand assets.
+The root test creates the production build and verifies rendered content,
+metadata, legal information, security headers and final brand assets. The API
+suite exercises validation, fixed delivery fields, privacy-safe logging,
+throttling, deduplication and provider-failure behaviour without sending email.
 
 ## Publishing
 
@@ -62,6 +69,10 @@ Azure Static Web Apps when the repository variable
 environment secret exists:
 
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`
+
+The Static Web App itself also holds encrypted application settings for the ACS
+connection, Azure-managed sender address, Cosmos DB connection and rate-limit
+HMAC secret. Those values belong in Azure, never GitHub or the static bundle.
 
 The deployment token is scoped to the Agila Static Web App. The apex and `www`
 custom domains are configured once in Azure and are not recreated during

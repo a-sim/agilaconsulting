@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
-    "lint": "oxlint app next.config.ts tests --deny-warnings && tsc --noEmit"
+    "lint": "oxlint app api/src api/test next.config.ts tests --deny-warnings && tsc --noEmit"
   },
   "dependencies": {
     "next": "16.2.12",

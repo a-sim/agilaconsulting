@@ -32,14 +32,23 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Install locked API dependencies
+        run: npm ci --prefix api
+
       - name: Audit dependency tree
         run: npm audit --audit-level=low
+
+      - name: Audit API dependency tree
+        run: npm audit --prefix api --audit-level=low
 
       - name: Lint source
         run: npm run lint
 
       - name: Build and test rendered site
         run: npm test
+
+      - name: Test contact API
+        run: npm test --prefix api
 
       - name: Check whitespace errors
         run: git diff --check
@@ -81,6 +90,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: out
+          api_location: api
           skip_app_build: true
 
       - name: Verify configured production URL
@@ -88,3 +98,11 @@ jobs:
         env:
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
         run: curl --fail --location --retry 5 --retry-all-errors "$PRODUCTION_URL"
+
+      - name: Verify contact API is loaded
+        if: ${{ vars.PRODUCTION_URL != '' }}
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' --retry 5 --retry-all-errors "$PRODUCTION_URL/api/contact")"
+          test "$status" = "405"

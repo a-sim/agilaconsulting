@@ -39,7 +39,9 @@ flowchart LR
 - A managed Node 22 Azure Function serves only the contact endpoint under
   `/api/contact`; GET exists solely as a controlled 405 health probe.
 - Azure Communication Services accepts plain-text website enquiries for the
-  fixed Alejandro recipient. The visitor address is used only as `Reply-To`.
+  fixed mailbox held in the protected `CONTACT_RECIPIENT_ADDRESS` setting. The
+  visitor address is used only as `Reply-To`, and the API waits for the Azure
+  send operation to succeed before returning HTTP 202.
 - Cosmos DB stores HMAC-derived abuse keys and counters with item-level TTL; it
   never stores the enquiry content or raw visitor address.
 - `public/staticwebapp.config.json` defines routing, caching and browser-security
@@ -63,7 +65,7 @@ need a higher approval threshold than marketing copy.
 - No browser analytics or advertising tags
 - No cookies, sign-in, analytics or contact-form database
 - Exact production-origin checks, a hidden honeypot, strict server validation,
-  32 KiB request cap and fixed sender/recipient/subject
+  32 KiB request cap and configuration-fixed sender/recipient/subject
 - Atomic limits of 3 submissions per source per 15 minutes, 10 per source per
   24 hours and 30 sends globally per 24 hours, plus 10-minute deduplication
 - Rate-limit identifiers are HMAC-derived and expire automatically within 24

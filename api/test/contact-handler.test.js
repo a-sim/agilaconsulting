@@ -48,6 +48,7 @@ function dependencies(overrides = {}) {
     limiter,
     values: {
       senderAddress: "DoNotReply@example.azurecomm.net",
+      recipientAddress: "recipient@example.com",
       rateLimitSecret: "a-long-random-secret",
       limiter,
       sendEmail: async (...args) => sent.push(args),
@@ -67,7 +68,7 @@ test("accepts one valid enquiry with fixed delivery fields", async () => {
   assert.equal(result.headers["Cache-Control"], "no-store");
   assert.equal(result.headers["X-Content-Type-Options"], "nosniff");
   assert.equal(deps.sent.length, 1);
-  assert.equal(deps.sent[0][0].recipients.to[0].address, "alejandro@agilaconsult.com");
+  assert.equal(deps.sent[0][0].recipients.to[0].address, "recipient@example.com");
   assert.equal(deps.sent[0][0].senderAddress, "DoNotReply@example.azurecomm.net");
   assert.equal(deps.sent[0][0].recipients.replyTo[0].address, "visitor@example.com");
   assert.equal(deps.sent[0][1], validPayload.submissionId);
@@ -226,6 +227,12 @@ test("maps durable throttling and provider failures without leaking details", as
 test("fails closed when configuration or the limiter is unavailable", async () => {
   const missing = dependencies({ rateLimitSecret: "" });
   assert.equal((await createContactHandler(missing.values)(request())).status, 503);
+
+  const missingRecipient = dependencies({ recipientAddress: "" });
+  assert.equal(
+    (await createContactHandler(missingRecipient.values)(request())).status,
+    503,
+  );
 
   const unavailable = dependencies({
     limiter: {

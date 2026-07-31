@@ -5,17 +5,12 @@ import { MobileMenu } from "./components/mobile-menu";
 import {
   capabilities,
   experience,
-  mailtoHref,
   method,
   navigation,
   site,
 } from "./content";
 
 const contactHref = "#contact";
-const emailHref = mailtoHref({
-  subject: "A transformation challenge",
-  body: "Hello Alejandro,\n\nI would like to discuss the following transformation challenge:\n\n",
-});
 
 const organisationSchema = {
   "@context": "https://schema.org",
@@ -279,7 +274,7 @@ export default function Home() {
                 directly.
               </p>
             </div>
-            <ContactForm email={site.email} mailtoHref={emailHref} />
+            <ContactForm email={site.email} />
           </div>
         </section>
       </main>
@@ -291,7 +286,7 @@ export default function Home() {
           </a>
           <div className="footer-contact">
             <span>Contact</span>
-            <a href={emailHref}>{site.email}</a>
+            <span>{site.email}</span>
           </div>
           <div className="footer-legal">
             <p>© {new Date().getFullYear()} Agila. All rights reserved.</p>

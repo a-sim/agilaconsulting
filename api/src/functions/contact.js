@@ -3,12 +3,14 @@ import { CosmosClient } from "@azure/cosmos";
 import { app } from "@azure/functions";
 import { createContactHandler } from "../contact-handler.js";
 import { CosmosRateLimiter } from "../cosmos-rate-limiter.js";
+import { sendEmailToCompletion } from "../email-sender.js";
 
 const emailConnectionString =
   process.env.COMMUNICATION_SERVICES_CONNECTION_STRING ?? "";
 const cosmosConnectionString =
   process.env.CONTACT_RATE_LIMIT_COSMOS_CONNECTION_STRING ?? "";
 const senderAddress = process.env.CONTACT_SENDER_ADDRESS ?? "";
+const recipientAddress = process.env.CONTACT_RECIPIENT_ADDRESS ?? "";
 const rateLimitSecret = process.env.CONTACT_RATE_LIMIT_SECRET ?? "";
 
 const emailClient = emailConnectionString
@@ -28,12 +30,12 @@ app.http("contact", {
   handler: async (request, context) => {
     const handler = createContactHandler({
       senderAddress,
+      recipientAddress,
       rateLimitSecret,
       limiter,
       sendEmail: emailClient
-        ? async (message, operationId) => {
-            await emailClient.beginSend(message, { operationId });
-          }
+        ? (message, operationId) =>
+            sendEmailToCompletion(emailClient, message, operationId)
         : null,
       log: (entry) => context.log(entry),
     });

@@ -5,14 +5,15 @@ import {
   experience,
   method,
   navigation,
+  outlookComposeHref,
   site,
 } from "./content";
 
-const contactHref = `mailto:${site.email}?subject=${encodeURIComponent(
-  "A transformation challenge",
-)}&body=${encodeURIComponent(
-  "Hello Alejandro,\n\nI would like to discuss the following transformation challenge:\n\n",
-)}`;
+const contactHref = outlookComposeHref({
+  subject: "A transformation challenge",
+  body: "Hello Alejandro,\n\nI would like to discuss the following transformation challenge:\n\n",
+});
+const emailHref = outlookComposeHref();
 
 const organisationSchema = {
   "@context": "https://schema.org",
@@ -89,7 +90,12 @@ export default function Home() {
             </a>
           ))}
         </nav>
-        <a className="header-contact" href={contactHref}>
+        <a
+          className="header-contact"
+          href={contactHref}
+          target="_blank"
+          rel="noreferrer"
+        >
           Discuss a challenge
           <span aria-hidden="true">↗</span>
         </a>
@@ -104,7 +110,9 @@ export default function Home() {
                 {item.label}
               </a>
             ))}
-            <a href={contactHref}>Discuss a challenge</a>
+            <a href={contactHref} target="_blank" rel="noreferrer">
+              Discuss a challenge
+            </a>
           </nav>
         </details>
       </header>
@@ -122,7 +130,12 @@ export default function Home() {
               control.
             </p>
             <div className="hero-actions">
-              <a className="button button-dark" href={contactHref}>
+              <a
+                className="button button-dark"
+                href={contactHref}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Discuss a challenge
                 <span aria-hidden="true">↗</span>
               </a>
@@ -280,11 +293,21 @@ export default function Home() {
                 implementation.
               </p>
               <div className="contact-actions">
-                <a className="button button-light" href={contactHref}>
+                <a
+                  className="button button-light"
+                  href={contactHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Email Alejandro
                   <span aria-hidden="true">↗</span>
                 </a>
-                <a className="contact-email" href={`mailto:${site.email}`}>
+                <a
+                  className="contact-email"
+                  href={emailHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {site.email}
                 </a>
               </div>
@@ -300,7 +323,9 @@ export default function Home() {
           </a>
           <div className="footer-contact">
             <span>Contact</span>
-            <a href={`mailto:${site.email}`}>{site.email}</a>
+            <a href={emailHref} target="_blank" rel="noreferrer">
+              {site.email}
+            </a>
           </div>
           <div className="footer-legal">
             <p>© {new Date().getFullYear()} Agila. All rights reserved.</p>

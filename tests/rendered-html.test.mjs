@@ -15,11 +15,15 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /From AI ambition to working systems\./);
   assert.match(html, /AI value depends on the system around it\./);
   assert.match(html, /pre-accredited by Luxinnovation/);
-  assert.match(html, /alejandro\.simo@agilaconsult\.com/);
+  assert.match(html, /alejandro@agilaconsult\.com/);
   assert.match(
     html,
-    /mailto:alejandro\.simo%40agilaconsult\.com|mailto:alejandro\.simo@agilaconsult\.com/,
+    /https:\/\/outlook\.office\.com\/mail\/deeplink\/compose\?to=alejandro%40agilaconsult\.com/,
   );
+  assert.match(html, /subject=A\+transformation\+challenge/);
+  assert.match(html, /target="_blank"/);
+  assert.doesNotMatch(html, /mailto:/);
+  assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
   assert.match(html, /application\/ld\+json/);
@@ -39,16 +43,27 @@ test("exports the legal and privacy notice", async () => {
   assert.match(html, /does not use advertising trackers/);
   assert.match(html, /Microsoft Azure/);
   assert.match(html, /Commission nationale pour la protection des données/);
+  assert.match(html, /alejandro@agilaconsult\.com/);
+  assert.match(
+    html,
+    /https:\/\/outlook\.office\.com\/mail\/deeplink\/compose\?to=alejandro%40agilaconsult\.com/,
+  );
+  assert.doesNotMatch(html, /mailto:/);
+  assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
   assert.doesNotMatch(html, /Cloudflare/);
 });
 
 test("ships Azure configuration, brand and discovery assets", async () => {
-  const [configText, packageJson, robots, sitemap, blackLogo, whiteLogo] =
+  const [configText, packageJson, robots, sitemap, security, blackLogo, whiteLogo] =
     await Promise.all([
       readFile(new URL("../out/staticwebapp.config.json", import.meta.url), "utf8"),
       readFile(new URL("../package.json", import.meta.url), "utf8"),
       readFile(new URL("../out/robots.txt", import.meta.url), "utf8"),
       readFile(new URL("../out/sitemap.xml", import.meta.url), "utf8"),
+      readFile(
+        new URL("../out/.well-known/security.txt", import.meta.url),
+        "utf8",
+      ),
       readFile(new URL("../out/agila-wordmark-black.svg", import.meta.url), "utf8"),
       readFile(new URL("../out/agila-wordmark-white.svg", import.meta.url), "utf8"),
     ]);
@@ -60,6 +75,8 @@ test("ships Azure configuration, brand and discovery assets", async () => {
   assert.doesNotMatch(packageJson, /wrangler|vinext|cloudflare/i);
   assert.match(robots, /Allow: \//);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
+  assert.match(security, /Contact: mailto:alejandro@agilaconsult\.com/);
+  assert.doesNotMatch(security, /alejandro\.simo@agilaconsult\.com/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
   await access(new URL("../out/404.html", import.meta.url));

@@ -6,24 +6,26 @@ export const site = {
     "https://luxinnovation.lu/digitalise-activities/digital-cyber-maturity/fit-4-ai",
 };
 
-export function outlookComposeHref({
+export function mailtoHref({
   subject,
   body,
 }: {
   subject?: string;
   body?: string;
 } = {}) {
-  const parameters = new URLSearchParams({ to: site.email });
+  const parameters: string[] = [];
 
   if (subject) {
-    parameters.set("subject", subject);
+    parameters.push(`subject=${encodeURIComponent(subject)}`);
   }
 
   if (body) {
-    parameters.set("body", body);
+    parameters.push(`body=${encodeURIComponent(body)}`);
   }
 
-  return `https://outlook.office.com/mail/deeplink/compose?${parameters.toString()}`;
+  const query = parameters.join("&");
+
+  return `mailto:${site.email}${query ? `?${query}` : ""}`;
 }
 
 export const navigation = [

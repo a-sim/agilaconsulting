@@ -8,8 +8,10 @@ provide Microsoft 365 email. Only the apex and `www` website records point to
 Azure; the existing email, Teams, device-enrollment and CRM records are left
 unchanged.
 
-No backend is needed in this iteration. Direct email is the contact path, Git is
-the content system, and the public site stores no visitor data.
+The contact experience uses a narrowly scoped managed Azure Function. It
+validates enquiries, applies durable abuse controls and submits a fixed-recipient
+plain-text email through Azure Communication Services. Git remains the content
+system. Form contents are not written to a website contact database.
 
 ## System view
 
@@ -22,6 +24,10 @@ flowchart LR
   E --> F["GitHub production environment"]
   F --> G["Azure Static Web Apps"]
   G --> H["agilaconsult.com"]
+  G --> K["Managed /api/contact Function"]
+  K --> L["Cosmos DB TTL rate limits"]
+  K --> M["Azure Communication Services Email"]
+  M --> N["Microsoft 365 mailbox"]
   I["Microsoft-hosted DNS"] --> H
   I --> J["Microsoft 365 and CRM records"]
 ```
@@ -30,6 +36,12 @@ flowchart LR
 
 - Next.js exports the home, legal and not-found pages to the `out` directory.
 - Azure Static Web Apps serves the static pages and fingerprinted client assets.
+- A managed Node 22 Azure Function serves only the contact endpoint under
+  `/api/contact`; GET exists solely as a controlled 405 health probe.
+- Azure Communication Services accepts plain-text website enquiries for the
+  fixed Alejandro recipient. The visitor address is used only as `Reply-To`.
+- Cosmos DB stores HMAC-derived abuse keys and counters with item-level TTL; it
+  never stores the enquiry content or raw visitor address.
 - `public/staticwebapp.config.json` defines routing, caching and browser-security
   headers at the Azure edge.
 - Content-hashed assets are cached immutably.
@@ -49,7 +61,16 @@ need a higher approval threshold than marketing copy.
 ## Security and privacy
 
 - No browser analytics or advertising tags
-- No cookies, sign-in, database, form submission or public API
+- No cookies, sign-in, analytics or contact-form database
+- Exact production-origin checks, a hidden honeypot, strict server validation,
+  32 KiB request cap and fixed sender/recipient/subject
+- Atomic limits of 3 submissions per source per 15 minutes, 10 per source per
+  24 hours and 30 sends globally per 24 hours, plus 10-minute deduplication
+- Rate-limit identifiers are HMAC-derived and expire automatically within 24
+  hours; email contents never enter application logs
+- Azure credentials are encrypted Static Web Apps settings and are unavailable
+  to the browser, repository and GitHub build output
+- Azure Communication Services engagement tracking remains disabled
 - No external font request at runtime
 - CSP, HSTS, frame denial, referrer and permissions policies at the Azure edge
 - HSTS intentionally excludes `includeSubDomains`, so deployment cannot impose
@@ -60,8 +81,6 @@ need a higher approval threshold than marketing copy.
 
 ## Deliberate omissions
 
-The first release has no empty insights section, CMS, newsletter, calendar
-embed, chatbot, contact form or interactive ontology explorer. Each would add
-maintenance, privacy or content-governance cost without strengthening the
-immediate positioning goal. They can be added sequentially when a real content
-owner and acceptance criteria exist.
+The site still has no empty insights section, CMS, newsletter, calendar embed,
+chatbot or interactive ontology explorer. The contact backend is deliberately
+single-purpose and cannot send to a visitor-controlled recipient.

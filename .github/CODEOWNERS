@@ -2,6 +2,8 @@
 
 /app/content.ts @a-sim
 /app/legal/ @a-sim
+/app/components/contact-form.tsx @a-sim
+/api/ @a-sim
 /.github/ @a-sim
 /AGENTS.md @a-sim
 /docs/ @a-sim

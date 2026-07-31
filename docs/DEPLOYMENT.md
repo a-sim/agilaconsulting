@@ -4,15 +4,17 @@
 
 - Source of truth: `a-sim/agilaconsulting`
 - Production branch: protected `main`
-- Runtime: static Next.js export on Azure Static Web Apps
+- Runtime: static Next.js export plus a managed Node 22 Azure Function on Azure
+  Static Web Apps
 - Canonical domain: `https://agilaconsult.com`
 - Alternate domain: `https://www.agilaconsult.com`, redirected by Azure to
   the canonical apex domain
 - Mail and identity services: Microsoft 365
 - Registrar and authoritative DNS: Microsoft 365, unchanged
 
-The site has no database, API, analytics, cookies or form backend. Static export
-removes the need for a continuously running application server.
+The site has no CMS, analytics, cookies or contact-form database. A managed
+Function handles only `/api/contact`; Cosmos DB retains expiring rate-limit
+counters, and Azure Communication Services submits the resulting email.
 
 ## Domain state recorded on 30 July 2026
 
@@ -40,8 +42,35 @@ No nameserver or registrar change is required for this architecture.
 7. Set the repository variable `AZURE_STATIC_WEB_APPS_DEPLOY_ENABLED` to `true`
    only after the token is stored.
 
-The GitHub workflow builds the static export, validates it, and uploads the
-contents of `out/` to Azure after a successful push to `main`.
+The GitHub workflow builds the static export, validates both packages, and
+uploads `out/` together with the `api/` Functions package after a successful
+push to `main`.
+
+## Contact service resources
+
+Create the following in the website resource group with European data
+locations:
+
+1. An Email Communication Service with an Azure-managed domain and engagement
+   tracking off.
+2. An Azure Communication Services resource linked to that email domain.
+3. A serverless Azure Cosmos DB for NoSQL account containing database
+   `agila-contact` and container `rate-limits`, partition key
+   `/partitionKey`, with TTL enabled.
+
+Use the Azure-managed `DoNotReply@…azurecomm.net` sender for the initial release.
+This avoids modifying Agila's Microsoft 365 SPF and DKIM records. Add the
+following encrypted Static Web Apps application settings:
+
+- `COMMUNICATION_SERVICES_CONNECTION_STRING`
+- `CONTACT_SENDER_ADDRESS`
+- `CONTACT_RATE_LIMIT_COSMOS_CONNECTION_STRING`
+- `CONTACT_RATE_LIMIT_SECRET`
+
+The HMAC secret must be a cryptographically random value. Never print these
+settings in CI, add them to GitHub, or place them in `local.settings.json` under
+source control. Configure Azure budget/send-volume alerts and retain diagnostic
+logs for no more than 30 days.
 
 ## 2. Validate Azure before changing website DNS
 
@@ -52,6 +81,7 @@ Confirm the generated Azure hostname serves:
 - `/robots.txt`
 - `/sitemap.xml`
 - `/.well-known/security.txt`, if present
+- `/api/contact` returns HTTP 405 with `Allow: POST`
 
 Check the generated site for correct metadata, security headers, local fonts
 and brand assets. Do not add custom-domain records before the generated hostname
@@ -104,6 +134,11 @@ Verify after the domain is active:
   unchanged;
 - `crm.agilaconsult.com`, the CRM wildcard and ACME validation still resolve;
 - Microsoft 365 reports the domain as healthy.
+- one real form submission is accepted and reaches
+  `alejandro@agilaconsult.com` with the visitor address as `Reply-To`;
+- invalid, honeypot, wrong-origin, oversized and throttled requests send no
+  email;
+- the standard `mailto:` and copy-address fallbacks remain available.
 
 ## 6. Retire the unused Cloudflare setup
 

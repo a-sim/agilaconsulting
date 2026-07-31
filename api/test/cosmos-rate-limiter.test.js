@@ -26,7 +26,7 @@ function fakeContainer() {
         read: async () => {
           const resource = records.get(id);
           if (!resource) {
-            throw cosmosError(404);
+            return { resource: undefined };
           }
           return { resource: { ...resource } };
         },

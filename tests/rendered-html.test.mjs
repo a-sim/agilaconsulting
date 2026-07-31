@@ -15,7 +15,7 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /From AI ambition to working systems\./);
   assert.match(html, /AI value depends on the system around it\./);
   assert.match(html, /pre-accredited by Luxinnovation/);
-  assert.match(html, /alejandro@agilaconsult\.com/);
+  assert.match(html, /alejandro\.simo@agilaconsult\.com/);
   assert.match(html, /href="#contact"/);
   assert.match(html, /action="\/api\/contact"/);
   assert.match(html, /method="post"/);
@@ -32,7 +32,7 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /Copy email address/);
   assert.doesNotMatch(html, /mailto:/);
   assert.doesNotMatch(html, /outlook\.office\.com/);
-  assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
+  assert.doesNotMatch(html, /alejandro@agilaconsult\.com/);
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
   assert.match(html, /application\/ld\+json/);
@@ -55,10 +55,10 @@ test("exports the legal and privacy notice", async () => {
   assert.match(html, /contact form/);
   assert.match(html, /Pseudonymous abuse-prevention data expires within 24/);
   assert.match(html, /Commission nationale pour la protection des données/);
-  assert.match(html, /alejandro@agilaconsult\.com/);
+  assert.match(html, /alejandro\.simo@agilaconsult\.com/);
   assert.doesNotMatch(html, /mailto:/);
   assert.doesNotMatch(html, /outlook\.office\.com/);
-  assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
+  assert.doesNotMatch(html, /alejandro@agilaconsult\.com/);
   assert.doesNotMatch(html, /Cloudflare/);
 });
 
@@ -106,8 +106,8 @@ test("ships Azure configuration, brand and discovery assets", async () => {
   assert.match(workflow, /npm test --prefix api/);
   assert.match(robots, /Allow: \//);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
-  assert.match(security, /Contact: mailto:alejandro@agilaconsult\.com/);
-  assert.doesNotMatch(security, /alejandro\.simo@agilaconsult\.com/);
+  assert.match(security, /Contact: mailto:alejandro\.simo@agilaconsult\.com/);
+  assert.doesNotMatch(security, /mailto:alejandro@agilaconsult\.com/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
   await access(new URL("../out/404.html", import.meta.url));

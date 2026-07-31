@@ -44,13 +44,7 @@ function focusElement(id: string) {
   requestAnimationFrame(() => document.getElementById(id)?.focus());
 }
 
-export function ContactForm({
-  email,
-  mailtoHref,
-}: {
-  email: string;
-  mailtoHref: string;
-}) {
+export function ContactForm({ email }: { email: string }) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submissionState, setSubmissionState] =
     useState<SubmissionState>("idle");
@@ -292,8 +286,8 @@ export function ContactForm({
             <>
               <strong>We couldn&apos;t confirm your enquiry</strong>
               <span>
-                Try again in a moment, or email Alejandro directly using the
-                option below.
+                Try again in a moment. If the problem continues, copy the email
+                address below and contact Alejandro directly.
               </span>
             </>
           ) : null}
@@ -302,7 +296,7 @@ export function ContactForm({
               <strong>Please wait before trying again</strong>
               <span>
                 We&apos;ve received too many enquiries from this connection. You
-                can still email Alejandro directly.
+                can still copy Alejandro&apos;s email address below.
               </span>
             </>
           ) : null}
@@ -319,18 +313,13 @@ export function ContactForm({
       </form>
 
       <div className="contact-alternatives">
-        <p>Prefer email?</p>
+        <p>Email address</p>
         <div className="contact-alternative-actions">
-          <a className="contact-email" href={mailtoHref}>
-            Open your email application
-          </a>
+          <span className="contact-address">{email}</span>
           <button type="button" onClick={copyEmailAddress}>
             Copy email address
           </button>
         </div>
-        <a className="contact-address" href={mailtoHref}>
-          {email}
-        </a>
         <p className="contact-copy-status" role="status">
           {copyStatus}
         </p>

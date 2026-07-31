@@ -6,7 +6,6 @@ import {
 } from "./contact-message.js";
 
 const maximumBodyBytes = 32 * 1_024;
-const recipientAddress = "alejandro@agilaconsult.com";
 const allowedOrigins = new Set([
   "https://agilaconsult.com",
   "https://www.agilaconsult.com",
@@ -38,6 +37,7 @@ function sourceAddress(request) {
 
 export function createContactHandler({
   senderAddress,
+  recipientAddress,
   rateLimitSecret,
   limiter,
   sendEmail,
@@ -107,7 +107,13 @@ export function createContactHandler({
       return response(400, { error: "invalid_request" });
     }
 
-    if (!senderAddress || !rateLimitSecret || !limiter || !sendEmail) {
+    if (
+      !senderAddress ||
+      !recipientAddress ||
+      !rateLimitSecret ||
+      !limiter ||
+      !sendEmail
+    ) {
       record("configuration_unavailable");
       return response(503, { error: "service_unavailable" });
     }
@@ -157,7 +163,7 @@ export function createContactHandler({
       } catch {
         record("dedupe_write_failed");
       }
-      record("accepted");
+      record("send_succeeded");
       return response(202, { ok: true });
     } catch {
       await limiter.release(reservation.reservations ?? []);

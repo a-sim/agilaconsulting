@@ -64,13 +64,15 @@ following encrypted Static Web Apps application settings:
 
 - `COMMUNICATION_SERVICES_CONNECTION_STRING`
 - `CONTACT_SENDER_ADDRESS`
+- `CONTACT_RECIPIENT_ADDRESS`
 - `CONTACT_RATE_LIMIT_COSMOS_CONNECTION_STRING`
 - `CONTACT_RATE_LIMIT_SECRET`
 
-The HMAC secret must be a cryptographically random value. Never print these
-settings in CI, add them to GitHub, or place them in `local.settings.json` under
-source control. Configure Azure budget/send-volume alerts and retain diagnostic
-logs for no more than 30 days.
+Set `CONTACT_RECIPIENT_ADDRESS` to the receiving Microsoft 365 mailbox rather
+than a public alias. The HMAC secret must be a cryptographically random value.
+Never print these settings in CI, add them to GitHub, or place them in
+`local.settings.json` under source control. Configure Azure budget/send-volume
+alerts and retain diagnostic logs for no more than 30 days.
 
 ## 2. Validate Azure before changing website DNS
 
@@ -134,11 +136,11 @@ Verify after the domain is active:
   unchanged;
 - `crm.agilaconsult.com`, the CRM wildcard and ACME validation still resolve;
 - Microsoft 365 reports the domain as healthy.
-- one real form submission is accepted and reaches
-  `alejandro@agilaconsult.com` with the visitor address as `Reply-To`;
+- one real form submission completes the Azure send operation and reaches the
+  configured Microsoft 365 mailbox with the visitor address as `Reply-To`;
 - invalid, honeypot, wrong-origin, oversized and throttled requests send no
   email;
-- the standard `mailto:` and copy-address fallbacks remain available.
+- the public address can be copied without invoking a local email application.
 
 ## 6. Retire the unused Cloudflare setup
 

@@ -29,11 +29,9 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /id="contact-website"[^>]+tabindex="-1"/);
   assert.match(html, /Please do not include confidential or/);
   assert.match(html, /Read the privacy notice/);
-  assert.match(html, /mailto:alejandro@agilaconsult\.com\?subject=/);
-  assert.match(html, /subject=A%20transformation%20challenge/);
-  assert.match(html, /body=Hello%20Alejandro%2C%0A%0AI%20would%20like/);
+  assert.match(html, /Copy email address/);
+  assert.doesNotMatch(html, /mailto:/);
   assert.doesNotMatch(html, /outlook\.office\.com/);
-  assert.doesNotMatch(html, /mailto:[^"]+"[^>]+target="_blank"/);
   assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
@@ -58,7 +56,7 @@ test("exports the legal and privacy notice", async () => {
   assert.match(html, /Pseudonymous abuse-prevention data expires within 24/);
   assert.match(html, /Commission nationale pour la protection des données/);
   assert.match(html, /alejandro@agilaconsult\.com/);
-  assert.match(html, /mailto:alejandro@agilaconsult\.com/);
+  assert.doesNotMatch(html, /mailto:/);
   assert.doesNotMatch(html, /outlook\.office\.com/);
   assert.doesNotMatch(html, /alejandro\.simo@agilaconsult\.com/);
   assert.doesNotMatch(html, /Cloudflare/);

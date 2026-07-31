@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { mailtoHref, site } from "../content";
-
-const emailHref = mailtoHref();
+import { site } from "../content";
 
 export const metadata: Metadata = {
   title: "Legal notice and privacy",
@@ -75,9 +73,7 @@ export default function LegalPage() {
                 </div>
                 <div>
                   <dt>Contact</dt>
-                  <dd>
-                    <a href={emailHref}>{site.email}</a>
-                  </dd>
+                  <dd>{site.email}</dd>
                 </div>
               </dl>
             </section>
@@ -162,9 +158,7 @@ export default function LegalPage() {
                 is the legal basis.
               </p>
               <p>
-                Send privacy requests to{" "}
-                <a href={emailHref}>{site.email}</a>
-                .
+                Send privacy requests to {site.email}.
                 You also have the right to lodge a complaint with Luxembourg&apos;s
                 data protection authority, the Commission nationale pour la
                 protection des données (CNPD).

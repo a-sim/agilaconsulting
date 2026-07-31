@@ -811,16 +811,13 @@ button:disabled {
   padding: 0 0 3px;
 }
 
-.contact-email {
-  border-bottom: 1px solid #777;
-  font-size: 0.78rem;
-}
-
 .contact-address {
-  display: inline-block;
-  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: #b9b9b9;
   font-size: 0.75rem;
+  overflow-wrap: anywhere;
 }
 
 .contact-copy-status {
@@ -856,6 +853,10 @@ button:disabled {
 .footer-legal a {
   align-self: flex-start;
   border-bottom: 1px solid #777;
+  color: var(--paper);
+}
+
+.footer-contact > span:last-child {
   color: var(--paper);
 }
 
@@ -1291,7 +1292,6 @@ button:disabled {
     width: 100%;
   }
 
-  .contact-alternative-actions a,
   .contact-alternative-actions button {
     min-height: 44px;
     display: inline-flex;

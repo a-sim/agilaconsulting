@@ -107,13 +107,16 @@ export function createContactHandler({
       return response(400, { error: "invalid_request" });
     }
 
-    const address = sourceAddress(request);
-    if (!senderAddress || !rateLimitSecret || !address || !limiter || !sendEmail) {
+    if (!senderAddress || !rateLimitSecret || !limiter || !sendEmail) {
       record("configuration_unavailable");
       return response(503, { error: "service_unavailable" });
     }
 
-    const sourceKey = pseudonymousKey(rateLimitSecret, address);
+    const address = sourceAddress(request);
+    const sourceMaterial = address
+      ? `address:${address}`
+      : `email:${validation.value.email}`;
+    const sourceKey = pseudonymousKey(rateLimitSecret, sourceMaterial);
     const duplicateKey = pseudonymousKey(
       rateLimitSecret,
       `${sourceKey}\n${validation.value.email}\n${validation.value.message}`,

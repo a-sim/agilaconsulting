@@ -72,6 +72,9 @@ export class CosmosRateLimiter {
       try {
         const { resource } = await itemReference.read();
         if (!resource) {
+          if (await this.#createCounter(id, windowSeconds)) {
+            return { allowed: true };
+          }
           continue;
         }
 
@@ -108,22 +111,10 @@ export class CosmosRateLimiter {
       } catch (error) {
         const code = statusCode(error);
         if (code === 404) {
-          try {
-            const now = this.now();
-            await this.container.items.create({
-              id,
-              partitionKey,
-              count: 1,
-              expiresAt: now + windowSeconds * 1_000,
-              ttl: windowSeconds,
-            });
+          if (await this.#createCounter(id, windowSeconds)) {
             return { allowed: true };
-          } catch (createError) {
-            if (statusCode(createError) === 409) {
-              continue;
-            }
-            throw createError;
           }
+          continue;
         }
 
         if (retryableStatusCodes.has(code)) {
@@ -134,6 +125,25 @@ export class CosmosRateLimiter {
     }
 
     throw new Error("Rate-limit contention exceeded retry budget");
+  }
+
+  async #createCounter(id, windowSeconds) {
+    try {
+      const now = this.now();
+      await this.container.items.create({
+        id,
+        partitionKey,
+        count: 1,
+        expiresAt: now + windowSeconds * 1_000,
+        ttl: windowSeconds,
+      });
+      return true;
+    } catch (error) {
+      if (statusCode(error) === 409) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   async #decrement(id) {

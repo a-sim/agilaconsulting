@@ -1,10 +1,30 @@
 export const site = {
   canonicalUrl: "https://agilaconsult.com",
-  email: "alejandro.simo@agilaconsult.com",
+  email: "alejandro@agilaconsult.com",
   linkedin: "https://www.linkedin.com/in/asimovesperinas/",
   fit4AiUrl:
     "https://luxinnovation.lu/digitalise-activities/digital-cyber-maturity/fit-4-ai",
 };
+
+export function outlookComposeHref({
+  subject,
+  body,
+}: {
+  subject?: string;
+  body?: string;
+} = {}) {
+  const parameters = new URLSearchParams({ to: site.email });
+
+  if (subject) {
+    parameters.set("subject", subject);
+  }
+
+  if (body) {
+    parameters.set("body", body);
+  }
+
+  return `https://outlook.office.com/mail/deeplink/compose?${parameters.toString()}`;
+}
 
 export const navigation = [
   { label: "Capabilities", href: "#capabilities" },

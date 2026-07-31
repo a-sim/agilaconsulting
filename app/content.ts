@@ -1,6 +1,6 @@
 export const site = {
   canonicalUrl: "https://agilaconsult.com",
-  email: "alejandro@agilaconsult.com",
+  email: "alejandro.simo@agilaconsult.com",
   linkedin: "https://www.linkedin.com/in/asimovesperinas/",
   fit4AiUrl:
     "https://luxinnovation.lu/digitalise-activities/digital-cyber-maturity/fit-4-ai",

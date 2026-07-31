@@ -52,7 +52,7 @@ test("builds a fixed-recipient plain-text ACS message", () => {
   const enquiry = validateContactPayload(validPayload).value;
   const email = buildContactEmail({
     senderAddress: "DoNotReply@example.azurecomm.net",
-    recipientAddress: "alejandro@agilaconsult.com",
+    recipientAddress: "alejandro.simo@agilaconsult.com",
     enquiry,
   });
 
@@ -60,7 +60,7 @@ test("builds a fixed-recipient plain-text ACS message", () => {
   assert.equal(email.content.subject, "[Agila website enquiry]");
   assert.match(email.content.plainText, /Alejandro Visitor/);
   assert.deepEqual(email.recipients.to, [
-    { address: "alejandro@agilaconsult.com", displayName: "Alejandro Simó" },
+    { address: "alejandro.simo@agilaconsult.com", displayName: "Alejandro Simó" },
   ]);
   assert.deepEqual(email.recipients.replyTo, [
     { address: "visitor@example.com", displayName: "Alejandro Visitor" },

@@ -47,6 +47,12 @@ jobs:
       - name: Build and test rendered site
         run: npm test
 
+      - name: Install browser for capability-system QA
+        run: npx playwright install --with-deps chromium
+
+      - name: Test interactive capability system
+        run: npm run test:browser
+
       - name: Test contact API
         run: npm test --prefix api
 

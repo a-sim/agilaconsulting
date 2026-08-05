@@ -1,12 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
+import { CapabilitySystemTeaser } from "./components/capability-system-teaser";
 import { ContactForm } from "./components/contact-form";
-import { MobileMenu } from "./components/mobile-menu";
+import { SiteFooter } from "./components/site-footer";
+import { SiteHeader } from "./components/site-header";
 import {
   capabilities,
   experience,
   method,
-  navigation,
   site,
 } from "./content";
 
@@ -37,19 +36,6 @@ const organisationSchema = {
   slogan: "AI-central, architecture-led transformation",
 };
 
-function Wordmark({ reversed = false }: { reversed?: boolean }) {
-  return (
-    <Image
-      className="wordmark"
-      src={reversed ? "/agila-wordmark-white.svg" : "/agila-wordmark-black.svg"}
-      alt="AGILA"
-      width={613}
-      height={260}
-      priority={!reversed}
-    />
-  );
-}
-
 function ArrowLink({
   href,
   children,
@@ -76,23 +62,7 @@ export default function Home() {
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <header className="site-header">
-        <a className="brand-link" href="#top" aria-label="Agila home">
-          <Wordmark />
-        </a>
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {navigation.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <a className="header-contact" href={contactHref}>
-          Discuss a challenge
-          <span aria-hidden="true">↓</span>
-        </a>
-        <MobileMenu items={navigation} />
-      </header>
+      <SiteHeader home />
 
       <main id="main-content">
         <section className="hero section-shell" id="top">
@@ -170,9 +140,11 @@ export default function Home() {
           </div>
         </section>
 
+        <CapabilitySystemTeaser />
+
         <section className="approach section-shell section-rule" id="approach">
           <div className="section-heading">
-            <div className="section-index">03 / Approach</div>
+            <div className="section-index">04 / Approach</div>
             <div>
               <h2>A practical path from assessment to implementation.</h2>
               <p className="section-note">
@@ -197,7 +169,7 @@ export default function Home() {
           id="experience"
         >
           <div className="section-heading section-heading-compact">
-            <div className="section-index">04 / Experience</div>
+            <div className="section-index">05 / Experience</div>
             <h2>Selected experience</h2>
           </div>
           <div className="case-grid">
@@ -219,7 +191,7 @@ export default function Home() {
 
         <section className="fit4ai section-shell section-rule">
           <div className="section-heading section-heading-compact">
-            <div className="section-index">05 / Fit 4 AI</div>
+            <div className="section-index">06 / Fit 4 AI</div>
             <h2>Fit 4 AI</h2>
           </div>
           <div className="fit4ai-panel">
@@ -236,7 +208,7 @@ export default function Home() {
 
         <section className="about section-shell section-rule" id="about">
           <div className="section-heading section-heading-compact">
-            <div className="section-index">06 / About Agila</div>
+            <div className="section-index">07 / About Agila</div>
             <h2>About Agila</h2>
           </div>
           <div className="about-content">
@@ -264,7 +236,7 @@ export default function Home() {
         >
           <div className="section-shell contact-inner">
             <div className="contact-main">
-              <p className="section-index">07 / Contact</p>
+              <p className="section-index">08 / Contact</p>
               <h2 id="contact-heading" tabIndex={-1}>
                 Bring the challenge into focus.
               </h2>
@@ -279,21 +251,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="section-shell footer-inner">
-          <a className="footer-brand" href="#top" aria-label="Agila home">
-            <Wordmark reversed />
-          </a>
-          <div className="footer-contact">
-            <span>Contact</span>
-            <span>{site.email}</span>
-          </div>
-          <div className="footer-legal">
-            <p>© {new Date().getFullYear()} Agila. All rights reserved.</p>
-            <Link href="/legal">Legal notice &amp; privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <script
         type="application/ld+json"

@@ -348,12 +348,84 @@ p {
 }
 
 .capabilities,
+.capability-system-teaser,
 .approach,
 .experience,
 .about,
 .fit4ai {
   padding-top: clamp(70px, 7vw, 96px);
   padding-bottom: clamp(78px, 8vw, 110px);
+}
+
+.capability-teaser-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  min-height: 540px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.capability-teaser-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  padding: 54px;
+  background: #3d3d3d;
+}
+
+.teaser-centre,
+.teaser-domain {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px;
+  background: var(--ink);
+  font-size: 0.71rem;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.teaser-centre {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--paper);
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.teaser-domain:nth-of-type(2),
+.teaser-domain:nth-of-type(3) {
+  grid-row: 1;
+}
+
+.teaser-domain span {
+  color: #9e9e9e;
+  font-size: 0.58rem;
+}
+
+.capability-teaser-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(34px, 4vw, 58px);
+  border-left: 1px solid #444;
+}
+
+.capability-teaser-copy > p:not(.eyebrow) {
+  margin-bottom: 32px;
+  color: #c7c7c3;
+  font-size: 0.92rem;
+  line-height: 1.72;
 }
 
 .section-heading {
@@ -1137,6 +1209,19 @@ button:disabled {
     align-items: start;
   }
 
+  .capability-teaser-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .capability-teaser-map {
+    min-height: 420px;
+  }
+
+  .capability-teaser-copy {
+    border-top: 1px solid #444;
+    border-left: 0;
+  }
+
   .contact-inner {
     grid-template-columns: 1fr;
   }
@@ -1207,12 +1292,30 @@ button:disabled {
 
   .thesis,
   .capabilities,
+  .capability-system-teaser,
   .approach,
   .experience,
   .about,
   .fit4ai {
     padding-top: 62px;
     padding-bottom: 70px;
+  }
+
+  .capability-teaser-map {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: 1px;
+  }
+
+  .teaser-centre {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 110px;
+  }
+
+  .teaser-domain:nth-of-type(2),
+  .teaser-domain:nth-of-type(3) {
+    grid-row: auto;
   }
 
   .section-heading,

@@ -41,27 +41,27 @@ export default function CapabilitiesPage() {
           </div>
           <div className={styles.heroCopy}>
             <p>
-              Agila combines six client-facing domains—from AI and data through
-              architecture and industrial operations—to move from a complex
-              challenge to governed implementation.
+              Agila connects six capability domains. Together, they help move a
+              complex challenge from definition through design, delivery and
+              adoption.
             </p>
             <p>
-              Choose a domain, then follow its focused capability areas,
-              component capabilities and cross-domain connections.
+              Choose a domain to see its capability areas and components. Follow
+              the connections to understand what else the work may depend on.
             </p>
           </div>
           <dl className={styles.modelStats}>
             <div>
               <dt>{capabilitySystem.counts.domains}</dt>
-              <dd>Client-facing domains</dd>
+              <dd>Domains</dd>
             </div>
             <div>
               <dt>{capabilitySystem.counts.capabilityAreas}</dt>
-              <dd>Focused capability areas</dd>
+              <dd>Capability areas</dd>
             </div>
             <div>
               <dt>{capabilitySystem.counts.componentCapabilities}</dt>
-              <dd>Component capabilities</dd>
+              <dd>Capability components</dd>
             </div>
           </dl>
         </section>
@@ -74,12 +74,12 @@ export default function CapabilitiesPage() {
           aria-labelledby="capability-index-title"
         >
           <div className="section-heading">
-            <div className="section-index">Browse as a list</div>
+            <div className="section-index">Browse the full list</div>
             <div>
-              <h2 id="capability-index-title">The complete public capability index.</h2>
+              <h2 id="capability-index-title">Browse the complete capability list.</h2>
               <p className="section-note">
-                This structured version contains the same public information as
-                the interactive map and remains usable without graph interaction.
+                Open any domain to see its capability areas and components. Use
+                the list to scan the whole system at your own pace.
               </p>
             </div>
           </div>

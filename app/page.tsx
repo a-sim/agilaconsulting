@@ -119,7 +119,7 @@ export default function Home() {
         >
           <div className="section-heading section-heading-compact">
             <div className="section-index">02 / Capabilities</div>
-            <h2>Capabilities</h2>
+            <h2>Capabilities that work as a system.</h2>
           </div>
           <div className="capability-grid">
             {capabilities.map((capability, index) => (
@@ -138,13 +138,12 @@ export default function Home() {
               </article>
             ))}
           </div>
+          <CapabilitySystemTeaser />
         </section>
-
-        <CapabilitySystemTeaser />
 
         <section className="approach section-shell section-rule" id="approach">
           <div className="section-heading">
-            <div className="section-index">04 / Approach</div>
+            <div className="section-index">03 / Approach</div>
             <div>
               <h2>A practical path from assessment to implementation.</h2>
               <p className="section-note">
@@ -169,7 +168,7 @@ export default function Home() {
           id="experience"
         >
           <div className="section-heading section-heading-compact">
-            <div className="section-index">05 / Experience</div>
+            <div className="section-index">04 / Experience</div>
             <h2>Selected experience</h2>
           </div>
           <div className="case-grid">
@@ -191,7 +190,7 @@ export default function Home() {
 
         <section className="fit4ai section-shell section-rule">
           <div className="section-heading section-heading-compact">
-            <div className="section-index">06 / Fit 4 AI</div>
+            <div className="section-index">05 / Fit 4 AI</div>
             <h2>Fit 4 AI</h2>
           </div>
           <div className="fit4ai-panel">
@@ -208,7 +207,7 @@ export default function Home() {
 
         <section className="about section-shell section-rule" id="about">
           <div className="section-heading section-heading-compact">
-            <div className="section-index">07 / About Agila</div>
+            <div className="section-index">06 / About Agila</div>
             <h2>About Agila</h2>
           </div>
           <div className="about-content">
@@ -236,7 +235,7 @@ export default function Home() {
         >
           <div className="section-shell contact-inner">
             <div className="contact-main">
-              <p className="section-index">08 / Contact</p>
+              <p className="section-index">07 / Contact</p>
               <h2 id="contact-heading" tabIndex={-1}>
                 Bring the challenge into focus.
               </h2>

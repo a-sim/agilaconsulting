@@ -203,12 +203,16 @@
 .domainControls button {
   display: flex;
   min-width: 0;
-  align-items: center;
+  min-height: 64px;
+  align-items: flex-start;
   gap: 10px;
   justify-content: flex-start;
   padding: 13px 12px;
   border-right: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
+  font-size: 0.64rem;
+  font-weight: 650;
+  line-height: 1.4;
   text-align: left;
 }
 

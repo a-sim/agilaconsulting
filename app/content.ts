@@ -7,7 +7,7 @@ export const site = {
 };
 
 export const navigation = [
-  { label: "Capabilities", href: "#capabilities" },
+  { label: "Capabilities", href: "/capabilities/" },
   { label: "Approach", href: "#approach" },
   { label: "Experience", href: "#experience" },
   { label: "About", href: "#about" },
@@ -16,7 +16,7 @@ export const navigation = [
 export const capabilities = [
   {
     number: "01",
-    title: "Data, analytics and AI",
+    title: "AI, data and analytics",
     text: "Find where AI and analytics can improve real work, then put the right data, controls and operating foundations in place.",
     details: [
       "AI opportunity and readiness assessment",
@@ -61,7 +61,7 @@ export const capabilities = [
   {
     number: "05",
     title: "Digital products and operating systems",
-    text: "Design and build focused applications, dashboards, integrations and workflows that support a defined business need.",
+    text: "Design and build purpose-built applications, dashboards, integrations and workflows that support a defined business need.",
     details: [
       "Product discovery and UX",
       "Applications and dashboards",

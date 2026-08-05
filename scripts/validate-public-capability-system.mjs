@@ -28,7 +28,6 @@ const allowedDomainKeys = new Set([
   "id",
   "number",
   "title",
-  "shortTitle",
   "description",
   "strategicRole",
   "order",
@@ -112,7 +111,6 @@ model.domains.forEach((domain, domainIndex) => {
   for (const field of [
     "number",
     "title",
-    "shortTitle",
     "description",
     "strategicRole",
   ]) {

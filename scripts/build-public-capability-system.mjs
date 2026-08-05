@@ -10,8 +10,7 @@ const DOMAIN_DEFINITIONS = [
   {
     id: "data-ai",
     number: "01",
-    title: "Data, analytics and AI",
-    shortTitle: "AI, data & analytics",
+    title: "AI, data and analytics",
     description:
       "Find where AI and analytics can improve real work, then put the right data, controls and operating foundations in place.",
     strategicRole: "Primary value focus",
@@ -58,7 +57,6 @@ const DOMAIN_DEFINITIONS = [
     id: "transformation",
     number: "02",
     title: "Business and operating-model transformation",
-    shortTitle: "Transform & adopt",
     description:
       "Connect strategy to processes, roles, investment choices and adoption so that change works beyond the technology layer.",
     strategicRole: "Transformation and adoption",
@@ -93,7 +91,6 @@ const DOMAIN_DEFINITIONS = [
     id: "architecture",
     number: "03",
     title: "Enterprise, solution and integration architecture",
-    shortTitle: "Architecture spine",
     description:
       "Define coherent current and target states, make technology trade-offs clear and give implementation teams designs they can use.",
     strategicRole: "Professional spine",
@@ -132,7 +129,6 @@ const DOMAIN_DEFINITIONS = [
     id: "industrial",
     number: "04",
     title: "Industrial operations, IT/OT and IIoT",
-    shortTitle: "Industrial anchor",
     description:
       "Connect plant, edge, cloud and enterprise environments with attention to operational context, resilience and scale.",
     strategicRole: "Differentiating field anchor",
@@ -171,9 +167,8 @@ const DOMAIN_DEFINITIONS = [
     id: "digital-products",
     number: "05",
     title: "Digital products and operating systems",
-    shortTitle: "Build & operationalise",
     description:
-      "Design and build focused applications, dashboards, integrations and workflows that support a defined business need.",
+      "Design and build purpose-built applications, dashboards, integrations and workflows that support a defined business need.",
     strategicRole: "Build and operationalise",
     clusters: [
       cluster("product-discovery", "Product discovery and UX", [
@@ -206,7 +201,6 @@ const DOMAIN_DEFINITIONS = [
     id: "governance",
     number: "06",
     title: "Governance, delivery and adoption",
-    shortTitle: "Govern & scale",
     description:
       "Keep programmes, AI use and implementation work accountable through clear ownership, evidence, assurance and knowledge transfer.",
     strategicRole: "Govern, deliver and scale",
@@ -314,7 +308,6 @@ const domains = DOMAIN_DEFINITIONS.map((definition, domainIndex) => ({
   id: definition.id,
   number: definition.number,
   title: definition.title,
-  shortTitle: definition.shortTitle,
   description: definition.description,
   strategicRole: definition.strategicRole,
   order: domainIndex + 1,
@@ -368,10 +361,10 @@ const componentCount = domains.reduce(
 
 const publicSystem = {
   schemaVersion: 1,
-  edition: "2026-08-05-public-demo-v1",
+  edition: "2026-08-05-public-v1",
   title: "Agila capability system",
   summary:
-    "A public, client-facing view of how Agila connects AI, architecture, industrial operations, transformation, digital delivery and governance.",
+    "A connected view of how Agila brings together AI, architecture, industrial operations, transformation, digital delivery and governance.",
   disclaimer:
     "This is a navigational capability model, not a fixed service catalogue, delivery promise or statement that every capability is used in every engagement.",
   counts: {

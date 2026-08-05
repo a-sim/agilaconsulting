@@ -35,7 +35,8 @@ test("exports the production homepage and metadata", async () => {
   assert.doesNotMatch(html, /alejandro@agilaconsult\.com/);
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
-  assert.match(html, /Complex change rarely sits in one box/);
+  assert.match(html, /Capabilities that work as a system/);
+  assert.match(html, /agila-capability-system\.webp/);
   assert.match(html, /href="\/capabilities\/"/);
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Agila Consulting S\.à r\.l\./);
@@ -51,8 +52,8 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /Capabilities that work as a system/);
   assert.match(html, /Interactive capability system/);
   assert.match(html, /All 24 areas/);
-  assert.match(html, /Search the public capability system/);
-  assert.match(html, /Data, analytics and AI/);
+  assert.match(html, /Search the capability system/);
+  assert.match(html, /AI, data and analytics/);
   assert.match(html, /Business and operating-model transformation/);
   assert.match(html, /Enterprise, solution and integration architecture/);
   assert.match(html, /Industrial operations, IT\/OT and IIoT/);
@@ -61,7 +62,7 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /Governed agentic workflows and operating systems/);
   assert.match(html, /Harness engineering/);
   assert.match(html, /UNS, MQTT and industrial connectivity/);
-  assert.match(html, /The complete public capability index/);
+  assert.match(html, /Browse the complete capability list/);
   assert.match(html, /canonical.*\/capabilities\//i);
   assert.doesNotMatch(html, /OpenClaw|FactoVia|RMT Labs|Mayker/);
   assert.doesNotMatch(
@@ -160,6 +161,7 @@ test("ships Azure configuration, brand and discovery assets", async () => {
   assert.doesNotMatch(security, /mailto:alejandro@agilaconsult\.com/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
+  await access(new URL("../out/agila-capability-system.webp", import.meta.url));
   await access(new URL("../out/404.html", import.meta.url));
   await assert.rejects(access(new URL("app/_sites-preview", root)));
 });

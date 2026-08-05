@@ -16,7 +16,6 @@ export type CapabilityDomain = {
   id: string;
   number: string;
   title: string;
-  shortTitle: string;
   description: string;
   strategicRole: string;
   order: number;

@@ -57,7 +57,7 @@ function graphElements(model: CapabilitySystem): ElementDefinition[] {
     elements.push({
       data: {
         id: domain.id,
-        label: domain.shortTitle,
+        label: domain.title,
         role: "domain",
         domainId: domain.id,
       },
@@ -482,13 +482,13 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
         id: cluster.id,
         title: cluster.title,
         type: "cluster" as const,
-        context: domain.shortTitle,
+        context: domain.title,
       })),
       ...componentEntries.map(({ domain, cluster, component }) => ({
         id: component.id,
         title: component.title,
         type: "component" as const,
-        context: `${domain.shortTitle} / ${cluster.title}`,
+        context: `${domain.title} / ${cluster.title}`,
       })),
     ],
     [clusterEntries, componentEntries, model.domains],
@@ -575,7 +575,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
       </div>
 
       <div className={styles.searchArea}>
-        <label htmlFor="capability-search">Search the public capability system</label>
+        <label htmlFor="capability-search">Search the capability system</label>
         <input
           autoComplete="off"
           id="capability-search"
@@ -607,7 +607,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
             type="button"
           >
             <span>{domain.number}</span>
-            {domain.shortTitle}
+            {domain.title}
           </button>
         ))}
       </div>
@@ -639,8 +639,8 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
               <span>A</span>
               <h3>Start with one of six domains.</h3>
               <p>
-                Select a domain to reveal its focused capability areas, then
-                continue to the component capabilities and their connections.
+                Select a domain to see its capability areas. Choose an area to
+                continue into its components and connections.
               </p>
             </div>
           )}
@@ -658,7 +658,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
                   }
                   type="button"
                 >
-                  {selectedDomain.shortTitle}
+                  {selectedDomain.title}
                 </button>
                 {selectedCluster && <span>/</span>}
                 {selectedCluster && (
@@ -676,7 +676,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
                 {selectedComponent
                   ? "Component capability"
                   : selectedCluster
-                    ? "Focused capability area"
+                    ? "Capability area"
                     : selectedDomain.strategicRole}
               </p>
               <h3>

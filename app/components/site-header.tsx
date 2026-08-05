@@ -18,7 +18,10 @@ export function Wordmark({ reversed = false }: { reversed?: boolean }) {
 export function SiteHeader({ home = false }: { home?: boolean }) {
   const items = home
     ? navigation
-    : navigation.map((item) => ({ ...item, href: `/${item.href}` }));
+    : navigation.map((item) => ({
+        ...item,
+        href: item.href.startsWith("#") ? `/${item.href}` : item.href,
+      }));
   const homeHref = home ? "#top" : "/";
   const contactHref = home ? "#contact" : "/#contact";
 

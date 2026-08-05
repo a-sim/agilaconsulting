@@ -34,7 +34,8 @@ flowchart LR
 
 ## Runtime
 
-- Next.js exports the home, legal and not-found pages to the `out` directory.
+- Next.js exports the home, capabilities, legal and not-found pages to the `out`
+  directory.
 - Azure Static Web Apps serves the static pages and fingerprinted client assets.
 - A managed Node 22 Azure Function serves only the contact endpoint under
   `/api/contact`; GET exists solely as a controlled 405 health probe.
@@ -60,6 +61,13 @@ the main safe surface for future OpenClaw updates.
 The legal page stays separate because company identifiers and privacy wording
 need a higher approval threshold than marketing copy.
 
+The capabilities page renders a complete semantic HTML taxonomy and enhances it
+with a route-only Cytoscape canvas. The graph uses deterministic positions,
+client-side search and shareable focus hashes. The homepage teaser is static and
+does not load Cytoscape or the public ontology. A positive-schema validator
+blocks private fields, names, dangling relationships and unexpected model
+changes before the static build runs.
+
 ## Security and privacy
 
 - No browser analytics or advertising tags
@@ -83,6 +91,8 @@ need a higher approval threshold than marketing copy.
 
 ## Deliberate omissions
 
-The site still has no empty insights section, CMS, newsletter, calendar embed,
-chatbot or interactive ontology explorer. The contact backend is deliberately
-single-purpose and cannot send to a visitor-controlled recipient.
+The site still has no empty insights section, CMS, newsletter, calendar embed or
+chatbot. The public capability explorer is deliberately presentation-only: it
+has no external data calls, account, analytics, data-entry or access to the
+private canonical ontology. The contact backend remains single-purpose and
+cannot send to a visitor-controlled recipient.

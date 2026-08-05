@@ -4,8 +4,10 @@ import { useRef } from "react";
 
 export function MobileMenu({
   items,
+  contactHref = "#contact",
 }: {
   items: ReadonlyArray<{ label: string; href: string }>;
+  contactHref?: string;
 }) {
   const menu = useRef<HTMLDetailsElement>(null);
 
@@ -35,7 +37,7 @@ export function MobileMenu({
             {item.label}
           </a>
         ))}
-        <a href="#contact" onClick={() => closeMenu("#contact")}>
+        <a href={contactHref} onClick={() => closeMenu(contactHref)}>
           Discuss a challenge
         </a>
       </nav>

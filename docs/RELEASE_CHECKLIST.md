@@ -17,6 +17,11 @@
 - [ ] Legal company identifiers and privacy statements remain current.
 - [ ] No analytics, cookies or form collection was added without approval and a privacy review.
 - [ ] Contact fields, privacy hint and copy-address control are accessible.
+- [ ] Capability search, focus, sharing, reset and list navigation work with keyboard and touch.
+- [ ] Every graph label and relationship is available through semantic HTML.
+- [ ] The public capability model passes its allowlist and privacy scan.
+- [ ] No private ontology, evidence, agent, partner or internal-control field reaches `out/`.
+- [ ] The homepage does not load the Cytoscape route chunk or public capability payload.
 
 ## Verification
 

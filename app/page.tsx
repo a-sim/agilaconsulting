@@ -1,12 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
+import { CapabilitySystemTeaser } from "./components/capability-system-teaser";
 import { ContactForm } from "./components/contact-form";
-import { MobileMenu } from "./components/mobile-menu";
+import { SiteFooter } from "./components/site-footer";
+import { SiteHeader } from "./components/site-header";
 import {
   capabilities,
   experience,
   method,
-  navigation,
   site,
 } from "./content";
 
@@ -37,19 +36,6 @@ const organisationSchema = {
   slogan: "AI-central, architecture-led transformation",
 };
 
-function Wordmark({ reversed = false }: { reversed?: boolean }) {
-  return (
-    <Image
-      className="wordmark"
-      src={reversed ? "/agila-wordmark-white.svg" : "/agila-wordmark-black.svg"}
-      alt="AGILA"
-      width={613}
-      height={260}
-      priority={!reversed}
-    />
-  );
-}
-
 function ArrowLink({
   href,
   children,
@@ -76,23 +62,7 @@ export default function Home() {
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <header className="site-header">
-        <a className="brand-link" href="#top" aria-label="Agila home">
-          <Wordmark />
-        </a>
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {navigation.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <a className="header-contact" href={contactHref}>
-          Discuss a challenge
-          <span aria-hidden="true">↓</span>
-        </a>
-        <MobileMenu items={navigation} />
-      </header>
+      <SiteHeader home />
 
       <main id="main-content">
         <section className="hero section-shell" id="top">
@@ -149,7 +119,7 @@ export default function Home() {
         >
           <div className="section-heading section-heading-compact">
             <div className="section-index">02 / Capabilities</div>
-            <h2>Capabilities</h2>
+            <h2>Capabilities that work as a system.</h2>
           </div>
           <div className="capability-grid">
             {capabilities.map((capability, index) => (
@@ -168,6 +138,7 @@ export default function Home() {
               </article>
             ))}
           </div>
+          <CapabilitySystemTeaser />
         </section>
 
         <section className="approach section-shell section-rule" id="approach">
@@ -279,21 +250,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="section-shell footer-inner">
-          <a className="footer-brand" href="#top" aria-label="Agila home">
-            <Wordmark reversed />
-          </a>
-          <div className="footer-contact">
-            <span>Contact</span>
-            <span>{site.email}</span>
-          </div>
-          <div className="footer-legal">
-            <p>© {new Date().getFullYear()} Agila. All rights reserved.</p>
-            <Link href="/legal">Legal notice &amp; privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <script
         type="application/ld+json"

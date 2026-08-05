@@ -79,6 +79,28 @@ especially:
 Those sources remain private. Never copy source ledgers, confidential notes,
 client files or ontology evidence into this public repository.
 
+## Public capability-system projection
+
+The interactive capability system is a separately authored public projection,
+not a filtered copy of the private ontology. It uses six buyer-facing domains:
+
+- D1, D2, D3 and D4 remain distinct;
+- functional operating-system patterns are folded into digital products;
+- training and adoption are folded into governance and delivery; and
+- company, practice, GTM, venture and partner-capacity material is excluded.
+
+Only explicitly approved public IDs, labels, summaries, hierarchy and curated
+relationship kinds may enter `public-capability-system.json`. Never copy private
+descriptions, notes, evidence, maturity, publication class, delivery modes,
+authority limits, agents, partners, clients, source identifiers or visual-tool
+metadata. Browser-side filtering is not sanitisation because shipped data is
+publicly inspectable.
+
+The public counts describe a navigational model, not staff size, guaranteed
+capacity, fixed service packages or a commitment to use every capability in an
+engagement. Changes to the public projection require a fresh content review and
+must pass the positive-schema validator before the site can build.
+
 ## Content-change receipt
 
 A content pull request should state:

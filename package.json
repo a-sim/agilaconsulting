@@ -7,16 +7,22 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run validate:capabilities",
     "build": "next build",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
-    "lint": "oxlint app api/src api/test next.config.ts tests --deny-warnings && tsc --noEmit"
+    "test:browser": "playwright test",
+    "lint": "oxlint app api/src api/test next.config.ts playwright.config.ts tests scripts --deny-warnings && tsc --noEmit",
+    "validate:capabilities": "node scripts/validate-public-capability-system.mjs"
   },
   "dependencies": {
+    "cytoscape": "^3.34.0",
     "next": "16.2.12",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.17",

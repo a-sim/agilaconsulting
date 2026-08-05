@@ -35,12 +35,62 @@ test("exports the production homepage and metadata", async () => {
   assert.doesNotMatch(html, /alejandro@agilaconsult\.com/);
   assert.match(html, /Assess the current situation/);
   assert.match(html, /Support and improve/);
+  assert.match(html, /Capabilities that work as a system/);
+  assert.match(html, /agila-capability-system\.webp/);
+  assert.match(html, /href="\/capabilities\/"/);
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Agila Consulting S\.à r\.l\./);
   assert.doesNotMatch(html, /Transformation architecture|map-pulse|delivery system/i);
   assert.doesNotMatch(html, /Start with the decision|Frame the decision/i);
   assert.doesNotMatch(html, /codex-preview|loading skeleton|placeholder/i);
   assert.doesNotMatch(html, /world-class|revolutionary|cutting-edge/i);
+});
+
+test("exports the public interactive capability system", async () => {
+  const html = await exportedHtml("capabilities/index.html");
+
+  assert.match(html, /Capabilities that work as a system/);
+  assert.match(html, /Interactive capability system/);
+  assert.match(html, /All 24 areas/);
+  assert.match(html, /Search the capability system/);
+  assert.match(html, /AI, data and analytics/);
+  assert.match(html, /Business and operating-model transformation/);
+  assert.match(html, /Enterprise, solution and integration architecture/);
+  assert.match(html, /Industrial operations, IT\/OT and IIoT/);
+  assert.match(html, /Digital products and operating systems/);
+  assert.match(html, /Governance, delivery and adoption/);
+  assert.match(html, /Governed agentic workflows and operating systems/);
+  assert.match(html, /Harness engineering/);
+  assert.match(html, /UNS, MQTT and industrial connectivity/);
+  assert.match(html, /Browse the complete capability list/);
+  assert.match(html, /canonical.*\/capabilities\//i);
+  assert.doesNotMatch(html, /OpenClaw|FactoVia|RMT Labs|Mayker/);
+  assert.doesNotMatch(
+    html,
+    /evidence_ids|evidence_maturity|publication_class|authority_limit|delivery_modes/,
+  );
+});
+
+test("public capability data uses only the approved projection", async () => {
+  const model = JSON.parse(
+    await readFile(
+      new URL("../app/capabilities/public-capability-system.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const serialized = JSON.stringify(model);
+
+  assert.deepEqual(model.counts, {
+    domains: 6,
+    capabilityAreas: 24,
+    componentCapabilities: 100,
+    curatedBridges: 12,
+  });
+  assert.doesNotMatch(serialized, /OpenClaw|Codex|Claude|FactoVia|RMT Labs|Mayker/i);
+  assert.doesNotMatch(
+    serialized,
+    /evidence_ids|evidence_maturity|publication_class|authority_limit|delivery_modes/,
+  );
 });
 
 test("exports the legal and privacy notice", async () => {
@@ -106,10 +156,12 @@ test("ships Azure configuration, brand and discovery assets", async () => {
   assert.match(workflow, /npm test --prefix api/);
   assert.match(robots, /Allow: \//);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
+  assert.match(sitemap, /https:\/\/agilaconsult\.com\/capabilities\//);
   assert.match(security, /Contact: mailto:alejandro\.simo@agilaconsult\.com/);
   assert.doesNotMatch(security, /mailto:alejandro@agilaconsult\.com/);
   assert.match(blackLogo, /AGILA wordmark/);
   assert.match(whiteLogo, /AGILA dark-mode wordmark/);
+  await access(new URL("../out/agila-capability-system.webp", import.meta.url));
   await access(new URL("../out/404.html", import.meta.url));
   await assert.rejects(access(new URL("app/_sites-preview", root)));
 });

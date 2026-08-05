@@ -1,0 +1,853 @@
+{
+  "schemaVersion": 1,
+  "edition": "2026-08-05-public-v1",
+  "title": "Agila capability system",
+  "summary": "A connected view of how Agila brings together AI, architecture, industrial operations, transformation, digital delivery and governance.",
+  "disclaimer": "This is a navigational capability model, not a fixed service catalogue, delivery promise or statement that every capability is used in every engagement.",
+  "counts": {
+    "domains": 6,
+    "capabilityAreas": 24,
+    "componentCapabilities": 100,
+    "curatedBridges": 12
+  },
+  "domains": [
+    {
+      "id": "data-ai",
+      "number": "01",
+      "title": "AI, data and analytics",
+      "description": "Find where AI and analytics can improve real work, then put the right data, controls and operating foundations in place.",
+      "strategicRole": "Primary value focus",
+      "order": 1,
+      "clusters": [
+        {
+          "id": "ai-readiness",
+          "title": "AI opportunity and readiness",
+          "summary": "Includes decision-first opportunity discovery, process, people, data and architecture maturity, ai versus rules or conventional automation and value, feasibility and risk portfolio.",
+          "order": 1,
+          "components": [
+            {
+              "id": "ai-readiness-decision-first-opportunity-discovery",
+              "title": "Decision-first opportunity discovery",
+              "order": 1
+            },
+            {
+              "id": "ai-readiness-process-people-data-and-architecture-maturity",
+              "title": "Process, people, data and architecture maturity",
+              "order": 2
+            },
+            {
+              "id": "ai-readiness-ai-versus-rules-or-conventional-automation",
+              "title": "AI versus rules or conventional automation",
+              "order": 3
+            },
+            {
+              "id": "ai-readiness-value-feasibility-and-risk-portfolio",
+              "title": "Value, feasibility and risk portfolio",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "data-foundations",
+          "title": "Data foundations, engineering and governance",
+          "summary": "Includes ownership and stewardship, quality, profiling and exception handling, canonical models, lineage and access and source contracts, pipelines and operational handover.",
+          "order": 2,
+          "components": [
+            {
+              "id": "data-foundations-ownership-and-stewardship",
+              "title": "Ownership and stewardship",
+              "order": 1
+            },
+            {
+              "id": "data-foundations-quality-profiling-and-exception-handling",
+              "title": "Quality, profiling and exception handling",
+              "order": 2
+            },
+            {
+              "id": "data-foundations-canonical-models-lineage-and-access",
+              "title": "Canonical models, lineage and access",
+              "order": 3
+            },
+            {
+              "id": "data-foundations-source-contracts-pipelines-and-operational-handover",
+              "title": "Source contracts, pipelines and operational handover",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "analytics-decisions",
+          "title": "Analytics and decision systems",
+          "summary": "Includes kpi trees and metric definitions, executive and operational dashboards, performance diagnostics and scenario analysis and management cadence and decision follow-through.",
+          "order": 3,
+          "components": [
+            {
+              "id": "analytics-decisions-kpi-trees-and-metric-definitions",
+              "title": "KPI trees and metric definitions",
+              "order": 1
+            },
+            {
+              "id": "analytics-decisions-executive-and-operational-dashboards",
+              "title": "Executive and operational dashboards",
+              "order": 2
+            },
+            {
+              "id": "analytics-decisions-performance-diagnostics-and-scenario-analysis",
+              "title": "Performance diagnostics and scenario analysis",
+              "order": 3
+            },
+            {
+              "id": "analytics-decisions-management-cadence-and-decision-follow-through",
+              "title": "Management cadence and decision follow-through",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "agentic-systems",
+          "title": "Governed agentic workflows and operating systems",
+          "summary": "Includes agentic architecture, harness engineering, graph engineering, loop engineering, context, memory and knowledge, agents, skills, tools and applications, evaluation, evidence and governance and observability, resilience and recovery.",
+          "order": 4,
+          "components": [
+            {
+              "id": "agentic-systems-agentic-architecture",
+              "title": "Agentic architecture",
+              "order": 1
+            },
+            {
+              "id": "agentic-systems-harness-engineering",
+              "title": "Harness engineering",
+              "order": 2
+            },
+            {
+              "id": "agentic-systems-graph-engineering",
+              "title": "Graph engineering",
+              "order": 3
+            },
+            {
+              "id": "agentic-systems-loop-engineering",
+              "title": "Loop engineering",
+              "order": 4
+            },
+            {
+              "id": "agentic-systems-context-memory-and-knowledge",
+              "title": "Context, memory and knowledge",
+              "order": 5
+            },
+            {
+              "id": "agentic-systems-agents-skills-tools-and-applications",
+              "title": "Agents, skills, tools and applications",
+              "order": 6
+            },
+            {
+              "id": "agentic-systems-evaluation-evidence-and-governance",
+              "title": "Evaluation, evidence and governance",
+              "order": 7
+            },
+            {
+              "id": "agentic-systems-observability-resilience-and-recovery",
+              "title": "Observability, resilience and recovery",
+              "order": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transformation",
+      "number": "02",
+      "title": "Business and operating-model transformation",
+      "description": "Connect strategy to processes, roles, investment choices and adoption so that change works beyond the technology layer.",
+      "strategicRole": "Transformation and adoption",
+      "order": 2,
+      "clusters": [
+        {
+          "id": "discovery-framing",
+          "title": "Discovery and current-state framing",
+          "summary": "Includes sponsor and decision-owner mapping, pain and economic-consequence framing, stakeholder, constraint and dependency mapping and outcomes and acceptance criteria.",
+          "order": 1,
+          "components": [
+            {
+              "id": "discovery-framing-sponsor-and-decision-owner-mapping",
+              "title": "Sponsor and decision-owner mapping",
+              "order": 1
+            },
+            {
+              "id": "discovery-framing-pain-and-economic-consequence-framing",
+              "title": "Pain and economic-consequence framing",
+              "order": 2
+            },
+            {
+              "id": "discovery-framing-stakeholder-constraint-and-dependency-mapping",
+              "title": "Stakeholder, constraint and dependency mapping",
+              "order": 3
+            },
+            {
+              "id": "discovery-framing-outcomes-and-acceptance-criteria",
+              "title": "Outcomes and acceptance criteria",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "process-design",
+          "title": "Capability and process design",
+          "summary": "Includes capability and value-stream mapping, current-state and target-state processes, roles, handoffs and controls and requirements and traceability.",
+          "order": 2,
+          "components": [
+            {
+              "id": "process-design-capability-and-value-stream-mapping",
+              "title": "Capability and value-stream mapping",
+              "order": 1
+            },
+            {
+              "id": "process-design-current-state-and-target-state-processes",
+              "title": "Current-state and target-state processes",
+              "order": 2
+            },
+            {
+              "id": "process-design-roles-handoffs-and-controls",
+              "title": "Roles, handoffs and controls",
+              "order": 3
+            },
+            {
+              "id": "process-design-requirements-and-traceability",
+              "title": "Requirements and traceability",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "value-roadmaps",
+          "title": "Value cases and roadmaps",
+          "summary": "Includes investment value, cost and total-cost framing, scenario and sensitivity analysis, value, feasibility and risk prioritisation and roadmap and investment sequencing.",
+          "order": 3,
+          "components": [
+            {
+              "id": "value-roadmaps-investment-value-cost-and-total-cost-framing",
+              "title": "Investment value, cost and total-cost framing",
+              "order": 1
+            },
+            {
+              "id": "value-roadmaps-scenario-and-sensitivity-analysis",
+              "title": "Scenario and sensitivity analysis",
+              "order": 2
+            },
+            {
+              "id": "value-roadmaps-value-feasibility-and-risk-prioritisation",
+              "title": "Value, feasibility and risk prioritisation",
+              "order": 3
+            },
+            {
+              "id": "value-roadmaps-roadmap-and-investment-sequencing",
+              "title": "Roadmap and investment sequencing",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "operating-model",
+          "title": "Operating model and adoption",
+          "summary": "Includes decision rights and accountability, organisation and service-delivery roles, scorecards, cadence and management routines and adoption and knowledge transfer.",
+          "order": 4,
+          "components": [
+            {
+              "id": "operating-model-decision-rights-and-accountability",
+              "title": "Decision rights and accountability",
+              "order": 1
+            },
+            {
+              "id": "operating-model-organisation-and-service-delivery-roles",
+              "title": "Organisation and service-delivery roles",
+              "order": 2
+            },
+            {
+              "id": "operating-model-scorecards-cadence-and-management-routines",
+              "title": "Scorecards, cadence and management routines",
+              "order": 3
+            },
+            {
+              "id": "operating-model-adoption-and-knowledge-transfer",
+              "title": "Adoption and knowledge transfer",
+              "order": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "architecture",
+      "number": "03",
+      "title": "Enterprise, solution and integration architecture",
+      "description": "Define coherent current and target states, make technology trade-offs clear and give implementation teams designs they can use.",
+      "strategicRole": "Professional spine",
+      "order": 3,
+      "clusters": [
+        {
+          "id": "enterprise-architecture",
+          "title": "Enterprise and target-state architecture",
+          "summary": "Includes business, data, application and technology views, current-state and target-state architecture, principles, standards and architecture runway and transition states and dependency roadmap.",
+          "order": 1,
+          "components": [
+            {
+              "id": "enterprise-architecture-business-data-application-and-technology-views",
+              "title": "Business, data, application and technology views",
+              "order": 1
+            },
+            {
+              "id": "enterprise-architecture-current-state-and-target-state-architecture",
+              "title": "Current-state and target-state architecture",
+              "order": 2
+            },
+            {
+              "id": "enterprise-architecture-principles-standards-and-architecture-runway",
+              "title": "Principles, standards and architecture runway",
+              "order": 3
+            },
+            {
+              "id": "enterprise-architecture-transition-states-and-dependency-roadmap",
+              "title": "Transition states and dependency roadmap",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "solution-architecture",
+          "title": "Solution architecture",
+          "summary": "Includes solution architecture descriptions, functional and non-functional requirements, decisions and trade-offs and security, privacy, resilience and operability.",
+          "order": 2,
+          "components": [
+            {
+              "id": "solution-architecture-solution-architecture-descriptions",
+              "title": "Solution architecture descriptions",
+              "order": 1
+            },
+            {
+              "id": "solution-architecture-functional-and-non-functional-requirements",
+              "title": "Functional and non-functional requirements",
+              "order": 2
+            },
+            {
+              "id": "solution-architecture-decisions-and-trade-offs",
+              "title": "Decisions and trade-offs",
+              "order": 3
+            },
+            {
+              "id": "solution-architecture-security-privacy-resilience-and-operability",
+              "title": "Security, privacy, resilience and operability",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "integration",
+          "title": "Integration and interoperability",
+          "summary": "Includes api and service-integration patterns, event-driven architecture, canonical models and data contracts and source-to-target mapping and reconciliation.",
+          "order": 3,
+          "components": [
+            {
+              "id": "integration-api-and-service-integration-patterns",
+              "title": "API and service-integration patterns",
+              "order": 1
+            },
+            {
+              "id": "integration-event-driven-architecture",
+              "title": "Event-driven architecture",
+              "order": 2
+            },
+            {
+              "id": "integration-canonical-models-and-data-contracts",
+              "title": "Canonical models and data contracts",
+              "order": 3
+            },
+            {
+              "id": "integration-source-to-target-mapping-and-reconciliation",
+              "title": "Source-to-target mapping and reconciliation",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "platform-assurance",
+          "title": "Platform assessment and design assurance",
+          "summary": "Includes architecture and technical maturity, product and user-value maturity, requirements-to-design traceability and vendor and implementation assurance.",
+          "order": 4,
+          "components": [
+            {
+              "id": "platform-assurance-architecture-and-technical-maturity",
+              "title": "Architecture and technical maturity",
+              "order": 1
+            },
+            {
+              "id": "platform-assurance-product-and-user-value-maturity",
+              "title": "Product and user-value maturity",
+              "order": 2
+            },
+            {
+              "id": "platform-assurance-requirements-to-design-traceability",
+              "title": "Requirements-to-design traceability",
+              "order": 3
+            },
+            {
+              "id": "platform-assurance-vendor-and-implementation-assurance",
+              "title": "Vendor and implementation assurance",
+              "order": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "industrial",
+      "number": "04",
+      "title": "Industrial operations, IT/OT and IIoT",
+      "description": "Connect plant, edge, cloud and enterprise environments with attention to operational context, resilience and scale.",
+      "strategicRole": "Differentiating field anchor",
+      "order": 4,
+      "clusters": [
+        {
+          "id": "digital-manufacturing",
+          "title": "Industrial operations and digital manufacturing",
+          "summary": "Includes mes, scada, erp and historian context, oee, andon and operator experience, process-to-quality and parameter analytics and multi-site digital-manufacturing roadmaps.",
+          "order": 1,
+          "components": [
+            {
+              "id": "digital-manufacturing-mes-scada-erp-and-historian-context",
+              "title": "MES, SCADA, ERP and historian context",
+              "order": 1
+            },
+            {
+              "id": "digital-manufacturing-oee-andon-and-operator-experience",
+              "title": "OEE, Andon and operator experience",
+              "order": 2
+            },
+            {
+              "id": "digital-manufacturing-process-to-quality-and-parameter-analytics",
+              "title": "Process-to-quality and parameter analytics",
+              "order": 3
+            },
+            {
+              "id": "digital-manufacturing-multi-site-digital-manufacturing-roadmaps",
+              "title": "Multi-site digital-manufacturing roadmaps",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "itot-resilience",
+          "title": "IT/OT architecture and resilience",
+          "summary": "Includes segmentation, zones and conduits, edge, plant, cloud and enterprise boundaries, availability and failure domains and monitoring, backup, recovery and rollback.",
+          "order": 2,
+          "components": [
+            {
+              "id": "itot-resilience-segmentation-zones-and-conduits",
+              "title": "Segmentation, zones and conduits",
+              "order": 1
+            },
+            {
+              "id": "itot-resilience-edge-plant-cloud-and-enterprise-boundaries",
+              "title": "Edge, plant, cloud and enterprise boundaries",
+              "order": 2
+            },
+            {
+              "id": "itot-resilience-availability-and-failure-domains",
+              "title": "Availability and failure domains",
+              "order": 3
+            },
+            {
+              "id": "itot-resilience-monitoring-backup-recovery-and-rollback",
+              "title": "Monitoring, backup, recovery and rollback",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "industrial-connectivity",
+          "title": "UNS, MQTT and industrial connectivity",
+          "summary": "Includes uns principles, topic taxonomy and governance, mqtt and broker architecture, opc ua and industrial-system integration and payload semantics, quality and lineage.",
+          "order": 3,
+          "components": [
+            {
+              "id": "industrial-connectivity-uns-principles-topic-taxonomy-and-governance",
+              "title": "UNS principles, topic taxonomy and governance",
+              "order": 1
+            },
+            {
+              "id": "industrial-connectivity-mqtt-and-broker-architecture",
+              "title": "MQTT and broker architecture",
+              "order": 2
+            },
+            {
+              "id": "industrial-connectivity-opc-ua-and-industrial-system-integration",
+              "title": "OPC UA and industrial-system integration",
+              "order": 3
+            },
+            {
+              "id": "industrial-connectivity-payload-semantics-quality-and-lineage",
+              "title": "Payload semantics, quality and lineage",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "operational-data",
+          "title": "Operational-data and AI readiness",
+          "summary": "Includes operational-data landscape and quality, context, units, timestamps and lineage, anomaly, predictive and vision opportunities and pilot feasibility and controlled scale-out.",
+          "order": 4,
+          "components": [
+            {
+              "id": "operational-data-operational-data-landscape-and-quality",
+              "title": "Operational-data landscape and quality",
+              "order": 1
+            },
+            {
+              "id": "operational-data-context-units-timestamps-and-lineage",
+              "title": "Context, units, timestamps and lineage",
+              "order": 2
+            },
+            {
+              "id": "operational-data-anomaly-predictive-and-vision-opportunities",
+              "title": "Anomaly, predictive and vision opportunities",
+              "order": 3
+            },
+            {
+              "id": "operational-data-pilot-feasibility-and-controlled-scale-out",
+              "title": "Pilot feasibility and controlled scale-out",
+              "order": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "digital-products",
+      "number": "05",
+      "title": "Digital products and operating systems",
+      "description": "Design and build purpose-built applications, dashboards, integrations and workflows that support a defined business need.",
+      "strategicRole": "Build and operationalise",
+      "order": 5,
+      "clusters": [
+        {
+          "id": "product-discovery",
+          "title": "Product discovery and UX",
+          "summary": "Includes user, job and workflow discovery, user journeys and interaction design, functional scope and acceptance criteria and privacy, multilingual and local-first choices.",
+          "order": 1,
+          "components": [
+            {
+              "id": "product-discovery-user-job-and-workflow-discovery",
+              "title": "User, job and workflow discovery",
+              "order": 1
+            },
+            {
+              "id": "product-discovery-user-journeys-and-interaction-design",
+              "title": "User journeys and interaction design",
+              "order": 2
+            },
+            {
+              "id": "product-discovery-functional-scope-and-acceptance-criteria",
+              "title": "Functional scope and acceptance criteria",
+              "order": 3
+            },
+            {
+              "id": "product-discovery-privacy-multilingual-and-local-first-choices",
+              "title": "Privacy, multilingual and local-first choices",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "applications",
+          "title": "Applications and dashboards",
+          "summary": "Includes application and service development, web and mobile interfaces, bi and operational dashboards and workflow and conversational interfaces.",
+          "order": 2,
+          "components": [
+            {
+              "id": "applications-application-and-service-development",
+              "title": "Application and service development",
+              "order": 1
+            },
+            {
+              "id": "applications-web-and-mobile-interfaces",
+              "title": "Web and mobile interfaces",
+              "order": 2
+            },
+            {
+              "id": "applications-bi-and-operational-dashboards",
+              "title": "BI and operational dashboards",
+              "order": 3
+            },
+            {
+              "id": "applications-workflow-and-conversational-interfaces",
+              "title": "Workflow and conversational interfaces",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "automation",
+          "title": "APIs, connectors and automation",
+          "summary": "Includes apis, webhooks and service contracts, workplace and collaboration integrations, crm, document and business-system connectors and messaging and workflow orchestration.",
+          "order": 3,
+          "components": [
+            {
+              "id": "automation-apis-webhooks-and-service-contracts",
+              "title": "APIs, webhooks and service contracts",
+              "order": 1
+            },
+            {
+              "id": "automation-workplace-and-collaboration-integrations",
+              "title": "Workplace and collaboration integrations",
+              "order": 2
+            },
+            {
+              "id": "automation-crm-document-and-business-system-connectors",
+              "title": "CRM, document and business-system connectors",
+              "order": 3
+            },
+            {
+              "id": "automation-messaging-and-workflow-orchestration",
+              "title": "Messaging and workflow orchestration",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "quality-handover",
+          "title": "Quality, deployment and handover",
+          "summary": "Includes unit, integration and regression testing, release pipelines and deployment controls, visual qa and accessibility review and documentation, handover, support and rollback.",
+          "order": 4,
+          "components": [
+            {
+              "id": "quality-handover-unit-integration-and-regression-testing",
+              "title": "Unit, integration and regression testing",
+              "order": 1
+            },
+            {
+              "id": "quality-handover-release-pipelines-and-deployment-controls",
+              "title": "Release pipelines and deployment controls",
+              "order": 2
+            },
+            {
+              "id": "quality-handover-visual-qa-and-accessibility-review",
+              "title": "Visual QA and accessibility review",
+              "order": 3
+            },
+            {
+              "id": "quality-handover-documentation-handover-support-and-rollback",
+              "title": "Documentation, handover, support and rollback",
+              "order": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "governance",
+      "number": "06",
+      "title": "Governance, delivery and adoption",
+      "description": "Keep programmes, AI use and implementation work accountable through clear ownership, evidence, assurance and knowledge transfer.",
+      "strategicRole": "Govern, deliver and scale",
+      "order": 6,
+      "clusters": [
+        {
+          "id": "programme-delivery",
+          "title": "Programme and project delivery",
+          "summary": "Includes scope, work packages and delivery plans, risks, assumptions, issues and dependencies, stakeholder and governance cadence and milestones, acceptance and transition.",
+          "order": 1,
+          "components": [
+            {
+              "id": "programme-delivery-scope-work-packages-and-delivery-plans",
+              "title": "Scope, work packages and delivery plans",
+              "order": 1
+            },
+            {
+              "id": "programme-delivery-risks-assumptions-issues-and-dependencies",
+              "title": "Risks, assumptions, issues and dependencies",
+              "order": 2
+            },
+            {
+              "id": "programme-delivery-stakeholder-and-governance-cadence",
+              "title": "Stakeholder and governance cadence",
+              "order": 3
+            },
+            {
+              "id": "programme-delivery-milestones-acceptance-and-transition",
+              "title": "Milestones, acceptance and transition",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "responsible-governance",
+          "title": "AI, data and privacy governance",
+          "summary": "Includes responsible-ai principles and risk taxonomy, regulatory-workstream framing and specialist escalation, data-use, privacy and security decisions and vendor neutrality and governance controls.",
+          "order": 2,
+          "components": [
+            {
+              "id": "responsible-governance-responsible-ai-principles-and-risk-taxonomy",
+              "title": "Responsible-AI principles and risk taxonomy",
+              "order": 1
+            },
+            {
+              "id": "responsible-governance-regulatory-workstream-framing-and-specialist-escalation",
+              "title": "Regulatory-workstream framing and specialist escalation",
+              "order": 2
+            },
+            {
+              "id": "responsible-governance-data-use-privacy-and-security-decisions",
+              "title": "Data-use, privacy and security decisions",
+              "order": 3
+            },
+            {
+              "id": "responsible-governance-vendor-neutrality-and-governance-controls",
+              "title": "Vendor neutrality and governance controls",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "human-assurance",
+          "title": "Human authority, evidence and assurance",
+          "summary": "Includes human decision rights and autonomy tiers, maker-checker separation and approval gates, provenance and public-claim controls and tests, audit trails and recovery evidence.",
+          "order": 3,
+          "components": [
+            {
+              "id": "human-assurance-human-decision-rights-and-autonomy-tiers",
+              "title": "Human decision rights and autonomy tiers",
+              "order": 1
+            },
+            {
+              "id": "human-assurance-maker-checker-separation-and-approval-gates",
+              "title": "Maker-checker separation and approval gates",
+              "order": 2
+            },
+            {
+              "id": "human-assurance-provenance-and-public-claim-controls",
+              "title": "Provenance and public-claim controls",
+              "order": 3
+            },
+            {
+              "id": "human-assurance-tests-audit-trails-and-recovery-evidence",
+              "title": "Tests, audit trails and recovery evidence",
+              "order": 4
+            }
+          ]
+        },
+        {
+          "id": "training-adoption",
+          "title": "Training, adoption and knowledge transfer",
+          "summary": "Includes ai literacy and tool selection, architecture and industrial workshops, playbooks, templates and knowledge assets and train-the-trainer, reuse and improvement.",
+          "order": 4,
+          "components": [
+            {
+              "id": "training-adoption-ai-literacy-and-tool-selection",
+              "title": "AI literacy and tool selection",
+              "order": 1
+            },
+            {
+              "id": "training-adoption-architecture-and-industrial-workshops",
+              "title": "Architecture and industrial workshops",
+              "order": 2
+            },
+            {
+              "id": "training-adoption-playbooks-templates-and-knowledge-assets",
+              "title": "Playbooks, templates and knowledge assets",
+              "order": 3
+            },
+            {
+              "id": "training-adoption-train-the-trainer-reuse-and-improvement",
+              "title": "Train-the-trainer, reuse and improvement",
+              "order": 4
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "bridge-01",
+      "source": "discovery-framing",
+      "target": "ai-readiness",
+      "label": "informs",
+      "kind": "informs"
+    },
+    {
+      "id": "bridge-02",
+      "source": "ai-readiness",
+      "target": "data-foundations",
+      "label": "depends on",
+      "kind": "depends-on"
+    },
+    {
+      "id": "bridge-03",
+      "source": "data-foundations",
+      "target": "analytics-decisions",
+      "label": "enables",
+      "kind": "enables"
+    },
+    {
+      "id": "bridge-04",
+      "source": "integration",
+      "target": "data-foundations",
+      "label": "shapes",
+      "kind": "informs"
+    },
+    {
+      "id": "bridge-05",
+      "source": "agentic-systems",
+      "target": "human-assurance",
+      "label": "governed by",
+      "kind": "governed-by"
+    },
+    {
+      "id": "bridge-06",
+      "source": "agentic-systems",
+      "target": "automation",
+      "label": "implemented through",
+      "kind": "implemented-through"
+    },
+    {
+      "id": "bridge-07",
+      "source": "process-design",
+      "target": "product-discovery",
+      "label": "informs",
+      "kind": "informs"
+    },
+    {
+      "id": "bridge-08",
+      "source": "operating-model",
+      "target": "enterprise-architecture",
+      "label": "aligns with",
+      "kind": "aligns-with"
+    },
+    {
+      "id": "bridge-09",
+      "source": "solution-architecture",
+      "target": "itot-resilience",
+      "label": "applies to",
+      "kind": "connects-to"
+    },
+    {
+      "id": "bridge-10",
+      "source": "integration",
+      "target": "industrial-connectivity",
+      "label": "connects to",
+      "kind": "connects-to"
+    },
+    {
+      "id": "bridge-11",
+      "source": "operational-data",
+      "target": "ai-readiness",
+      "label": "specialises",
+      "kind": "specialises"
+    },
+    {
+      "id": "bridge-12",
+      "source": "quality-handover",
+      "target": "training-adoption",
+      "label": "transitions through",
+      "kind": "transitions-through"
+    }
+  ]
+}

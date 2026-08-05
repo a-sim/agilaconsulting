@@ -6,6 +6,33 @@ test("keeps the capability system inside the homepage capability section", async
 }) => {
   await page.goto("/");
   const section = page.locator("#capabilities");
+  const headerLogo = page.locator("header").getByRole("img", { name: "AGILA" });
+  await expect(headerLogo).toBeVisible();
+  await expect(headerLogo).toHaveAttribute(
+    "src",
+    "/agila-wordmark-black.svg?v=20260805",
+  );
+  expect(
+    await headerLogo.evaluate((image: HTMLImageElement) =>
+      Boolean(image.complete && image.naturalWidth > 0),
+    ),
+  ).toBe(true);
+
+  const footerLogo = page.locator("footer").getByRole("img", { name: "AGILA" });
+  await footerLogo.scrollIntoViewIfNeeded();
+  await expect(footerLogo).toBeVisible();
+  await expect(footerLogo).toHaveAttribute(
+    "src",
+    "/agila-wordmark-white.svg?v=20260805",
+  );
+  await expect
+    .poll(() =>
+      footerLogo.evaluate((image: HTMLImageElement) =>
+        Boolean(image.complete && image.naturalWidth > 0),
+      ),
+    )
+    .toBe(true);
+
   await expect(
     section.getByRole("heading", { name: "Capabilities that work as a system." }),
   ).toBeVisible();

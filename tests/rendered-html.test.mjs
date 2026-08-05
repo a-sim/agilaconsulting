@@ -40,6 +40,8 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /href="\/capabilities\/"/);
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Agila Consulting S\.à r\.l\./);
+  assert.match(html, /agila-wordmark-black\.svg\?v=20260805/);
+  assert.match(html, /agila-wordmark-white\.svg\?v=20260805/);
   assert.doesNotMatch(html, /Transformation architecture|map-pulse|delivery system/i);
   assert.doesNotMatch(html, /Start with the decision|Frame the decision/i);
   assert.doesNotMatch(html, /codex-preview|loading skeleton|placeholder/i);

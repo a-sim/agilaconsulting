@@ -6,7 +6,11 @@ export function Wordmark({ reversed = false }: { reversed?: boolean }) {
   return (
     <Image
       className="wordmark"
-      src={reversed ? "/agila-wordmark-white.svg" : "/agila-wordmark-black.svg"}
+      src={
+        reversed
+          ? "/agila-wordmark-white.svg?v=20260805"
+          : "/agila-wordmark-black.svg?v=20260805"
+      }
       alt="AGILA"
       width={613}
       height={260}

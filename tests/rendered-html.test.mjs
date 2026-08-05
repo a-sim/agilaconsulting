@@ -143,6 +143,7 @@ test("ships Azure configuration, brand and discovery assets", async () => {
     ]);
   const config = JSON.parse(configText);
 
+  assert.equal(config.trailingSlash, "auto");
   assert.match(config.globalHeaders["Content-Security-Policy"], /frame-ancestors 'none'/);
   assert.match(config.globalHeaders["Content-Security-Policy"], /object-src 'none'/);
   assert.doesNotMatch(config.globalHeaders["Content-Security-Policy"], /unsafe-eval/);

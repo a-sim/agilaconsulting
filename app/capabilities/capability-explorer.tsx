@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   PointerEvent as ReactPointerEvent,
   WheelEvent as ReactWheelEvent,
@@ -12,6 +19,7 @@ import type {
   CapabilitySystem,
 } from "./ontology-types";
 import styles from "./capabilities.module.css";
+import { INLINE_EXPLORER_RECOVERY } from "./inline-explorer-recovery";
 
 type Focus =
   | { type: "overview" }
@@ -60,6 +68,9 @@ type GraphPresentation = {
 
 type GraphView = { zoom: number; x: number; y: number };
 type HitTarget = { node: GraphNode; x: number; y: number; radius: number };
+type RecoveryWindow = Window & {
+  __agilaCapabilityRecoveryCleanup?: () => void;
+};
 
 const ROOT_ID = "agila";
 const DOMAIN_ANGLES = [-90, -150, -30, 30, 90, 150];
@@ -347,6 +358,7 @@ function focusHash(focus: Focus) {
 }
 
 export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
+  const explorerRoot = useRef<HTMLElement>(null);
   const graphCanvas = useRef<HTMLCanvasElement>(null);
   const graphView = useRef<GraphView>({ zoom: 1, x: 0, y: 0 });
   const drawGraph = useRef<() => void>(() => {});
@@ -363,6 +375,14 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
   const [query, setQuery] = useState("");
   const [shareStatus, setShareStatus] = useState("");
   const [graphStatus, setGraphStatus] = useState<GraphStatus>("fallback");
+
+  useLayoutEffect(() => {
+    const root = explorerRoot.current;
+    if (!root) return;
+    const recoveryWindow = window as RecoveryWindow;
+    recoveryWindow.__agilaCapabilityRecoveryCleanup?.();
+    root.dataset.reactReady = "true";
+  }, []);
 
   const domainById = useMemo(
     () => new Map(model.domains.map((domain) => [domain.id, domain])),
@@ -531,12 +551,15 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     drawGraph.current = draw;
     draw();
 
-    const observer = new ResizeObserver(draw);
-    observer.observe(canvas);
-    void document.fonts?.ready.then(draw);
+    const observer =
+      typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(draw);
+    if (observer) observer.observe(canvas);
+    else window.addEventListener("resize", draw);
+    if (document.fonts?.ready) void document.fonts.ready.then(draw);
     return () => {
       active = false;
-      observer.disconnect();
+      observer?.disconnect();
+      window.removeEventListener("resize", draw);
       drawGraph.current = () => {};
     };
   }, [graphModel, graphPresentation]);
@@ -706,8 +729,28 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     return clusterById.get(id)?.cluster.title ?? id;
   }
 
+  const recoveryPayload = JSON.stringify({
+    model,
+    classes: {
+      breadcrumbs: styles.breadcrumbs,
+      inspectorContent: styles.inspectorContent,
+      inspectorEmpty: styles.inspectorEmpty,
+      inspectorList: styles.inspectorList,
+      inspectorRole: styles.inspectorRole,
+      inspectorTopline: styles.inspectorTopline,
+      searchResults: styles.searchResults,
+    },
+  }).replace(/</g, "\\u003c");
+
   return (
-    <section className={styles.explorer} id="explorer" aria-labelledby="explorer-title">
+    <section
+      aria-labelledby="explorer-title"
+      className={styles.explorer}
+      data-capability-explorer="true"
+      data-react-ready="false"
+      id="explorer"
+      ref={explorerRoot}
+    >
       <div className={styles.explorerTopline}>
         <div>
           <p className="eyebrow">Interactive capability system</p>
@@ -716,6 +759,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
         <div className={styles.viewControls} aria-label="Explorer view">
           <button
             aria-pressed={focus.type === "overview"}
+            data-recovery-view="overview"
             onClick={() => commitFocus({ type: "overview" })}
             type="button"
           >
@@ -723,6 +767,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
           </button>
           <button
             aria-pressed={focus.type === "all"}
+            data-recovery-view="all"
             onClick={() => commitFocus({ type: "all" })}
             type="button"
           >
@@ -759,6 +804,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
         {model.domains.map((domain) => (
           <button
             aria-pressed={selectedDomain?.id === domain.id}
+            data-recovery-domain={domain.id}
             key={domain.id}
             onClick={() => commitFocus({ type: "domain", id: domain.id })}
             type="button"
@@ -773,9 +819,9 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
         <div className={styles.graphPanel}>
           <div className={styles.graphCaption}>
             <div className={styles.graphStatus} role="status">
-              <span>{graphStatusLabels[graphStatus]}</span>
+              <span data-recovery-status="true">{graphStatusLabels[graphStatus]}</span>
             </div>
-            <span className={styles.graphHint}>
+            <span className={styles.graphHint} data-recovery-hint="true">
               {graphStatus === "ready"
                 ? "Scroll to zoom · drag to pan · select a node"
                 : "A visual overview remains available"}
@@ -785,6 +831,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
             aria-hidden="true"
             className={styles.graphFallback}
             data-hidden={graphStatus === "ready"}
+            data-recovery-fallback="true"
           >
             <Image
               alt=""
@@ -810,7 +857,11 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
           />
         </div>
 
-        <aside className={styles.inspector} aria-live="polite">
+        <aside
+          aria-live="polite"
+          className={styles.inspector}
+          data-recovery-inspector="true"
+        >
           <div className={styles.inspectorTopline}>
             <span>Selected capability</span>
             <button onClick={shareView} type="button">
@@ -935,6 +986,12 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
           )}
         </aside>
       </div>
+      <script
+        dangerouslySetInnerHTML={{ __html: recoveryPayload }}
+        id="agila-capability-recovery-data"
+        type="application/json"
+      />
+      <script dangerouslySetInnerHTML={{ __html: INLINE_EXPLORER_RECOVERY }} />
     </section>
   );
 }

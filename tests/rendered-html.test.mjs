@@ -66,6 +66,8 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /UNS, MQTT and industrial connectivity/);
   assert.match(html, /agila-capability-system\.webp/);
   assert.match(html, /A visual overview remains available/);
+  assert.match(html, /agila-capability-recovery-data/);
+  assert.match(html, /__agilaCapabilityRecoveryCleanup/);
   assert.match(html, /Browse the complete capability list/);
   assert.match(html, /canonical.*\/capabilities\//i);
   assert.doesNotMatch(html, /OpenClaw|FactoVia|RMT Labs|Mayker/);
@@ -146,8 +148,12 @@ test("ships Azure configuration, brand and discovery assets", async () => {
       readFile(new URL("../out/agila-wordmark-white.svg", import.meta.url), "utf8"),
     ]);
   const config = JSON.parse(configText);
+  const capabilitiesRoute = config.routes.find(
+    (route) => route.route === "/capabilities/index.html",
+  );
 
   assert.equal(config.trailingSlash, "auto");
+  assert.equal(capabilitiesRoute.headers["Cache-Control"], "no-store, max-age=0");
   assert.match(config.globalHeaders["Content-Security-Policy"], /frame-ancestors 'none'/);
   assert.match(config.globalHeaders["Content-Security-Policy"], /object-src 'none'/);
   assert.doesNotMatch(config.globalHeaders["Content-Security-Policy"], /unsafe-eval/);

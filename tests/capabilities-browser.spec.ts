@@ -161,6 +161,37 @@ test("renders the interactive map without a separate graph runtime", async ({
   ).toBeVisible();
 });
 
+test("recovers the interactive explorer when application chunks are unavailable", async ({
+  page,
+}) => {
+  await page.route(/\/_next\/static\/chunks\/.*\.js(?:\?|$)/, (route) =>
+    route.abort(),
+  );
+  await page.goto("/capabilities/");
+
+  await expect(page.getByText("Interactive map ready")).toBeVisible({
+    timeout: 5_000,
+  });
+  const canvas = page.locator('canvas[data-renderer="native-canvas"]');
+  await expect(canvas).toHaveAttribute("data-ready", "true");
+  const canvasBox = await canvas.boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const initialScale = Math.max(
+    0.2,
+    Math.min((canvasBox!.width - 150) / 390, (canvasBox!.height - 150) / 450),
+  );
+  await canvas.click({
+    position: {
+      x: canvasBox!.width / 2,
+      y: canvasBox!.height / 2 - 225 * initialScale,
+    },
+  });
+  await expect(page).toHaveURL(/#domain=data-ai$/);
+  await expect(
+    page.getByRole("heading", { name: "AI, data and analytics" }),
+  ).toBeVisible();
+});
+
 test("keyboard navigation and reduced motion preserve the same interaction", async ({
   page,
 }) => {

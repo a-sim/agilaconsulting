@@ -64,6 +64,8 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /Governed agentic workflows and operating systems/);
   assert.match(html, /Harness engineering/);
   assert.match(html, /UNS, MQTT and industrial connectivity/);
+  assert.match(html, /agila-capability-system\.webp/);
+  assert.match(html, /A visual overview remains available/);
   assert.match(html, /Browse the complete capability list/);
   assert.match(html, /canonical.*\/capabilities\//i);
   assert.doesNotMatch(html, /OpenClaw|FactoVia|RMT Labs|Mayker/);

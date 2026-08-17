@@ -7,6 +7,7 @@ import type {
   EventObjectNode,
   NodeSingular,
 } from "cytoscape";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   CapabilityArea,
@@ -29,8 +30,19 @@ type SearchItem = {
   context: string;
 };
 
+type GraphStatus = "fallback" | "loading" | "ready" | "slow" | "failed";
+
 const ROOT_ID = "agila";
 const DOMAIN_ANGLES = [-90, -150, -30, 30, 90, 150];
+const GRAPH_LOAD_TIMEOUT_MS = 8_000;
+
+const graphStatusLabels: Record<GraphStatus, string> = {
+  fallback: "Visual overview",
+  loading: "Loading interactive map…",
+  ready: "Interactive map ready",
+  slow: "The interactive map is taking longer than expected.",
+  failed: "The interactive map could not load.",
+};
 
 function radians(degrees: number) {
   return (degrees * Math.PI) / 180;
@@ -160,7 +172,8 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
   const [focus, setFocus] = useState<Focus>({ type: "overview" });
   const [query, setQuery] = useState("");
   const [shareStatus, setShareStatus] = useState("");
-  const [graphStatus, setGraphStatus] = useState("Loading interactive map…");
+  const [graphStatus, setGraphStatus] = useState<GraphStatus>("fallback");
+  const [graphAttempt, setGraphAttempt] = useState(0);
 
   const domainById = useMemo(
     () => new Map(model.domains.map((domain) => [domain.id, domain])),
@@ -237,9 +250,14 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     let cancelled = false;
     let instance: Core | null = null;
 
+    const loadTimer = window.setTimeout(() => {
+      if (!cancelled && !instance) setGraphStatus("slow");
+    }, GRAPH_LOAD_TIMEOUT_MS);
+
     async function initialise() {
       const { default: cytoscape } = await import("cytoscape");
       if (cancelled || !graphContainer.current) return;
+      setGraphStatus("loading");
 
       instance = cytoscape({
         container: graphContainer.current,
@@ -367,17 +385,22 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
       });
 
       graph.current = instance;
-      setGraphStatus("Interactive map ready");
+      window.clearTimeout(loadTimer);
+      setGraphStatus("ready");
     }
 
-    initialise().catch(() => setGraphStatus("The text explorer remains available below."));
+    initialise().catch(() => {
+      window.clearTimeout(loadTimer);
+      if (!cancelled) setGraphStatus("failed");
+    });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(loadTimer);
       graph.current = null;
       instance?.destroy();
     };
-  }, [model]);
+  }, [graphAttempt, model]);
 
   useEffect(() => {
     const cy = graph.current;
@@ -466,6 +489,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     componentById,
     domainById,
     focus,
+    graphStatus,
     model.domains,
     model.relationships,
   ]);
@@ -549,6 +573,10 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     return clusterById.get(id)?.cluster.title ?? id;
   }
 
+  function retryGraph() {
+    setGraphAttempt((attempt) => attempt + 1);
+  }
+
   return (
     <section className={styles.explorer} id="explorer" aria-labelledby="explorer-title">
       <div className={styles.explorerTopline}>
@@ -615,12 +643,38 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
       <div className={styles.explorerWorkspace}>
         <div className={styles.graphPanel}>
           <div className={styles.graphCaption}>
-            <span>{graphStatus}</span>
-            <span>Scroll to zoom · drag to pan · select a node</span>
+            <div className={styles.graphStatus} role="status">
+              <span>{graphStatusLabels[graphStatus]}</span>
+              {(graphStatus === "slow" || graphStatus === "failed") && (
+                <button onClick={retryGraph} type="button">
+                  Retry map
+                </button>
+              )}
+            </div>
+            <span className={styles.graphHint}>
+              {graphStatus === "ready"
+                ? "Scroll to zoom · drag to pan · select a node"
+                : "A visual overview remains available"}
+            </span>
+          </div>
+          <div
+            aria-hidden="true"
+            className={styles.graphFallback}
+            data-hidden={graphStatus === "ready"}
+          >
+            <Image
+              alt=""
+              height={900}
+              priority
+              sizes="(max-width: 980px) 100vw, 70vw"
+              src="/agila-capability-system.webp"
+              width={1600}
+            />
           </div>
           <div
             aria-hidden="true"
             className={styles.graphCanvas}
+            data-ready={graphStatus === "ready"}
             ref={graphContainer}
           />
         </div>

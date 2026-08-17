@@ -105,6 +105,36 @@ test("explores domains, areas, components and search without browser errors", as
   expect(errors).toEqual([]);
 });
 
+test("keeps a visible fallback when the map bundle cannot finish loading", async ({
+  page,
+}) => {
+  const response = await page.request.get("/capabilities/");
+  const html = await response.text();
+  const initialScripts = new Set(
+    [...html.matchAll(/(?:src|href)="([^"]+\.js)"/g)].map(
+      ([, source]) => new URL(source, "http://localhost:3000").pathname,
+    ),
+  );
+
+  await page.route(/\.js(?:\?|$)/, (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    const isMapDependency = pathname.includes("cytoscape");
+    return !initialScripts.has(pathname) && isMapDependency
+      ? route.abort()
+      : route.continue();
+  });
+  await page.goto("/capabilities/");
+
+  await expect(page.getByText("Visual overview", { exact: true })).toBeVisible();
+  await expect(page.getByText("Loading interactive map…")).toHaveCount(0);
+  await expect(
+    page.locator('img[src="/agila-capability-system.webp"]'),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Browse the complete capability list." }),
+  ).toBeVisible();
+});
+
 test("keyboard navigation and reduced motion preserve the same interaction", async ({
   page,
 }) => {
@@ -171,5 +201,6 @@ test("the complete capability index remains available without JavaScript", async
   ).toBeVisible();
   await expect(page.getByText("AI, data and analytics", { exact: true })).toBeVisible();
   await expect(page.getByText("Governance, delivery and adoption", { exact: true })).toBeVisible();
+  await expect(page.locator('img[src="/agila-capability-system.webp"]')).toBeVisible();
   await context.close();
 });

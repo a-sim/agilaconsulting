@@ -299,8 +299,13 @@
 }
 
 .graphCanvas {
+  width: 100%;
+  height: calc(100% - 40px);
+  cursor: grab;
   opacity: 0;
   pointer-events: none;
+  touch-action: none;
+  user-select: none;
   transition: opacity 180ms ease;
 }
 

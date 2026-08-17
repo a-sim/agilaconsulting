@@ -105,30 +105,56 @@ test("explores domains, areas, components and search without browser errors", as
   expect(errors).toEqual([]);
 });
 
-test("keeps a visible fallback when the map bundle cannot finish loading", async ({
+test("renders the interactive map without a separate graph runtime", async ({
   page,
 }) => {
-  const response = await page.request.get("/capabilities/");
-  const html = await response.text();
-  const initialScripts = new Set(
-    [...html.matchAll(/(?:src|href)="([^"]+\.js)"/g)].map(
-      ([, source]) => new URL(source, "http://localhost:3000").pathname,
-    ),
-  );
-
-  await page.route(/\.js(?:\?|$)/, (route) => {
-    const pathname = new URL(route.request().url()).pathname;
-    const isMapDependency = pathname.includes("cytoscape");
-    return !initialScripts.has(pathname) && isMapDependency
-      ? route.abort()
-      : route.continue();
+  const graphRuntimeRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().toLowerCase().includes("cytoscape")) {
+      graphRuntimeRequests.push(request.url());
+    }
   });
   await page.goto("/capabilities/");
 
-  await expect(page.getByText("Visual overview", { exact: true })).toBeVisible();
-  await expect(page.getByText("Loading interactive map…")).toHaveCount(0);
+  await expect(page.getByText("Interactive map ready")).toBeVisible();
+  const canvas = page.locator('canvas[data-renderer="native-canvas"]');
+  await expect(canvas).toBeVisible();
+  await expect(canvas).toHaveAttribute("data-ready", "true");
+  await expect
+    .poll(() =>
+      canvas.evaluate((element: HTMLCanvasElement) => {
+        const context = element.getContext("2d");
+        if (!context || element.width === 0 || element.height === 0) return false;
+        const pixels = context.getImageData(
+          0,
+          0,
+          element.width,
+          element.height,
+        ).data;
+        for (let index = 3; index < pixels.length; index += 4) {
+          if (pixels[index] > 0) return true;
+        }
+        return false;
+      }),
+    )
+    .toBe(true);
+  expect(graphRuntimeRequests).toEqual([]);
+
+  const canvasBox = await canvas.boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const initialScale = Math.max(
+    0.2,
+    Math.min((canvasBox!.width - 150) / 390, (canvasBox!.height - 150) / 450),
+  );
+  await canvas.click({
+    position: {
+      x: canvasBox!.width / 2,
+      y: canvasBox!.height / 2 - 225 * initialScale,
+    },
+  });
+  await expect(page).toHaveURL(/#domain=data-ai$/);
   await expect(
-    page.locator('img[src="/agila-capability-system.webp"]'),
+    page.getByRole("heading", { name: "AI, data and analytics" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Browse the complete capability list." }),

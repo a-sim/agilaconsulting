@@ -1,14 +1,11 @@
 "use client";
 
-import type {
-  Core,
-  EdgeSingular,
-  ElementDefinition,
-  EventObjectNode,
-  NodeSingular,
-} from "cytoscape";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type {
+  PointerEvent as ReactPointerEvent,
+  WheelEvent as ReactWheelEvent,
+} from "react";
 import type {
   CapabilityArea,
   CapabilityDomain,
@@ -30,18 +27,47 @@ type SearchItem = {
   context: string;
 };
 
-type GraphStatus = "fallback" | "loading" | "ready" | "slow" | "failed";
+type GraphStatus = "fallback" | "ready";
+
+type GraphNode = {
+  id: string;
+  label: string;
+  role: "root" | "domain" | "cluster" | "component";
+  domainId?: string;
+  parentId?: string;
+  position: { x: number; y: number };
+};
+
+type GraphEdge = {
+  id: string;
+  source: string;
+  target: string;
+  kind: "hierarchy" | "bridge";
+};
+
+type GraphModel = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+};
+
+type GraphPresentation = {
+  visible: Set<string>;
+  selected: Set<string>;
+  context: Set<string>;
+  bridges: Set<string>;
+  focusDomainId?: string;
+};
+
+type GraphView = { zoom: number; x: number; y: number };
+type HitTarget = { node: GraphNode; x: number; y: number; radius: number };
 
 const ROOT_ID = "agila";
 const DOMAIN_ANGLES = [-90, -150, -30, 30, 90, 150];
-const GRAPH_LOAD_TIMEOUT_MS = 8_000;
+const GRAPH_CENTRE = { x: 500, y: 370 };
 
 const graphStatusLabels: Record<GraphStatus, string> = {
   fallback: "Visual overview",
-  loading: "Loading interactive map…",
   ready: "Interactive map ready",
-  slow: "The interactive map is taking longer than expected.",
-  failed: "The interactive map could not load.",
 };
 
 function radians(degrees: number) {
@@ -55,70 +81,62 @@ function point(cx: number, cy: number, radius: number, angle: number) {
   };
 }
 
-function graphElements(model: CapabilitySystem): ElementDefinition[] {
-  const centre = { x: 500, y: 370 };
-  const elements: ElementDefinition[] = [
-    {
-      data: { id: ROOT_ID, label: "Agila", role: "root" },
-      position: centre,
-    },
+function buildGraph(model: CapabilitySystem): GraphModel {
+  const nodes: GraphNode[] = [
+    { id: ROOT_ID, label: "Agila", role: "root", position: GRAPH_CENTRE },
   ];
+  const edges: GraphEdge[] = [];
 
   model.domains.forEach((domain, domainIndex) => {
     const domainAngle = radians(DOMAIN_ANGLES[domainIndex]);
-    elements.push({
-      data: {
-        id: domain.id,
-        label: domain.title,
-        role: "domain",
-        domainId: domain.id,
-      },
-      position: point(centre.x, centre.y, 225, domainAngle),
+    nodes.push({
+      id: domain.id,
+      label: domain.title,
+      role: "domain",
+      domainId: domain.id,
+      position: point(GRAPH_CENTRE.x, GRAPH_CENTRE.y, 225, domainAngle),
     });
-    elements.push({
-      data: {
-        id: `hierarchy-${ROOT_ID}-${domain.id}`,
-        source: ROOT_ID,
-        target: domain.id,
-        kind: "hierarchy",
-      },
+    edges.push({
+      id: `hierarchy-${ROOT_ID}-${domain.id}`,
+      source: ROOT_ID,
+      target: domain.id,
+      kind: "hierarchy",
     });
 
     domain.clusters.forEach((cluster, clusterIndex) => {
       const spread = (clusterIndex - (domain.clusters.length - 1) / 2) * 0.15;
       const clusterAngle = domainAngle + spread;
-      const clusterPosition = point(centre.x, centre.y, 410, clusterAngle);
-      elements.push({
-        data: {
-          id: cluster.id,
-          label: cluster.title,
-          role: "cluster",
-          domainId: domain.id,
-          parentId: domain.id,
-        },
+      const clusterPosition = point(
+        GRAPH_CENTRE.x,
+        GRAPH_CENTRE.y,
+        410,
+        clusterAngle,
+      );
+      nodes.push({
+        id: cluster.id,
+        label: cluster.title,
+        role: "cluster",
+        domainId: domain.id,
+        parentId: domain.id,
         position: clusterPosition,
       });
-      elements.push({
-        data: {
-          id: `hierarchy-${domain.id}-${cluster.id}`,
-          source: domain.id,
-          target: cluster.id,
-          kind: "hierarchy",
-        },
+      edges.push({
+        id: `hierarchy-${domain.id}-${cluster.id}`,
+        source: domain.id,
+        target: cluster.id,
+        kind: "hierarchy",
       });
 
       const componentRadius = cluster.components.length > 4 ? 92 : 68;
       cluster.components.forEach((component, componentIndex) => {
         const componentAngle =
           (Math.PI * 2 * componentIndex) / cluster.components.length;
-        elements.push({
-          data: {
-            id: component.id,
-            label: component.title,
-            role: "component",
-            domainId: domain.id,
-            parentId: cluster.id,
-          },
+        nodes.push({
+          id: component.id,
+          label: component.title,
+          role: "component",
+          domainId: domain.id,
+          parentId: cluster.id,
           position: point(
             clusterPosition.x,
             clusterPosition.y,
@@ -126,28 +144,191 @@ function graphElements(model: CapabilitySystem): ElementDefinition[] {
             componentAngle,
           ),
         });
-        elements.push({
-          data: {
-            id: `hierarchy-${cluster.id}-${component.id}`,
-            source: cluster.id,
-            target: component.id,
-            kind: "hierarchy",
-          },
+        edges.push({
+          id: `hierarchy-${cluster.id}-${component.id}`,
+          source: cluster.id,
+          target: component.id,
+          kind: "hierarchy",
         });
       });
     });
   });
 
   model.relationships.forEach((relationship) => {
-    elements.push({
-      data: {
-        ...relationship,
-        role: "bridge",
-      },
+    edges.push({
+      id: relationship.id,
+      source: relationship.source,
+      target: relationship.target,
+      kind: "bridge",
     });
   });
 
-  return elements;
+  return { nodes, edges };
+}
+
+function wrapGraphLabel(label: string) {
+  const words = label.split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length <= 24 || !line) line = candidate;
+    else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  if (lines.length <= 2) return lines;
+  return [lines[0], `${lines[1].slice(0, 21)}…`];
+}
+
+function renderGraph(
+  canvas: HTMLCanvasElement,
+  graph: GraphModel,
+  presentation: GraphPresentation,
+  view: GraphView,
+) {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (width < 1 || height < 1) return [];
+
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const renderWidth = Math.round(width * pixelRatio);
+  const renderHeight = Math.round(height * pixelRatio);
+  if (canvas.width !== renderWidth || canvas.height !== renderHeight) {
+    canvas.width = renderWidth;
+    canvas.height = renderHeight;
+  }
+
+  const context = canvas.getContext("2d");
+  if (!context) return [];
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  context.clearRect(0, 0, width, height);
+
+  const visibleNodes = graph.nodes.filter((node) =>
+    presentation.visible.has(node.id),
+  );
+  if (visibleNodes.length === 0) return [];
+  const minX = Math.min(...visibleNodes.map((node) => node.position.x));
+  const maxX = Math.max(...visibleNodes.map((node) => node.position.x));
+  const minY = Math.min(...visibleNodes.map((node) => node.position.y));
+  const maxY = Math.max(...visibleNodes.map((node) => node.position.y));
+  const worldWidth = Math.max(maxX - minX, 320);
+  const worldHeight = Math.max(maxY - minY, 320);
+  const baseScale = Math.max(
+    0.2,
+    Math.min((width - 150) / worldWidth, (height - 150) / worldHeight),
+  );
+  const centreX = (minX + maxX) / 2;
+  const centreY = (minY + maxY) / 2;
+  const position = (node: GraphNode) => ({
+    x: width / 2 + view.x + (node.position.x - centreX) * baseScale * view.zoom,
+    y: height / 2 + view.y + (node.position.y - centreY) * baseScale * view.zoom,
+  });
+  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
+
+  context.lineCap = "round";
+  for (const edge of graph.edges) {
+    if (
+      !presentation.visible.has(edge.source) ||
+      !presentation.visible.has(edge.target) ||
+      (edge.kind === "bridge" && !presentation.bridges.has(edge.id))
+    ) {
+      continue;
+    }
+    const source = nodesById.get(edge.source);
+    const target = nodesById.get(edge.target);
+    if (!source || !target) continue;
+    const from = position(source);
+    const to = position(target);
+    context.beginPath();
+    context.setLineDash(edge.kind === "bridge" ? [5, 6] : []);
+    context.strokeStyle = edge.kind === "bridge" ? "#bdbdb8" : "#5a5a57";
+    context.globalAlpha = edge.kind === "bridge" ? 0.48 : 0.72;
+    context.lineWidth = edge.kind === "bridge" ? 1.25 : 1;
+    context.moveTo(from.x, from.y);
+    context.lineTo(to.x, to.y);
+    context.stroke();
+  }
+  context.setLineDash([]);
+
+  const targets: HitTarget[] = [];
+  for (const node of visibleNodes) {
+    const { x, y } = position(node);
+    const radius =
+      node.role === "root"
+        ? 24
+        : node.role === "domain"
+          ? 14
+          : node.role === "cluster"
+            ? 7
+            : 4;
+    const isDimmed =
+      Boolean(presentation.focusDomainId) &&
+      node.role === "domain" &&
+      node.id !== presentation.focusDomainId;
+    context.globalAlpha = presentation.context.has(node.id)
+      ? 0.5
+      : isDimmed
+        ? 0.16
+        : 1;
+    context.fillStyle =
+      node.role === "component"
+        ? "#8c8c87"
+        : node.role === "cluster"
+          ? "#d7d7d2"
+          : "#f2f2ee";
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = presentation.selected.has(node.id) ? 4 : 1.5;
+    context.beginPath();
+    if (node.role === "root") {
+      context.rect(x - 41, y - 22, 82, 44);
+    } else {
+      context.arc(x, y, radius, 0, Math.PI * 2);
+    }
+    context.fill();
+    context.stroke();
+
+    const lines = wrapGraphLabel(node.label);
+    const fontSize =
+      node.role === "root"
+        ? 13
+        : node.role === "domain"
+          ? 11
+          : node.role === "component"
+            ? 8
+            : 10;
+    const fontWeight = node.role === "root" ? 700 : 600;
+    context.font = `${fontWeight} ${fontSize}px Manrope, Arial, sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    const labelY = node.role === "root" ? y : y + radius + 12;
+    lines.forEach((line, index) => {
+      const lineY = labelY + index * (fontSize + 2);
+      const textWidth = context.measureText(line).width;
+      context.fillStyle =
+        node.role === "root" ? "#080808" : "rgba(8, 8, 8, 0.82)";
+      if (node.role !== "root") {
+        context.fillRect(
+          x - textWidth / 2 - 3,
+          lineY - fontSize / 2 - 2,
+          textWidth + 6,
+          fontSize + 4,
+        );
+        context.fillStyle = "#f7f7f4";
+      }
+      context.fillText(line, x, lineY);
+    });
+    targets.push({
+      node,
+      x,
+      y,
+      radius: node.role === "root" ? 42 : Math.max(radius, 18),
+    });
+  }
+  context.globalAlpha = 1;
+  return targets;
 }
 
 function focusHash(focus: Focus) {
@@ -166,14 +347,22 @@ function focusHash(focus: Focus) {
 }
 
 export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
-  const graphContainer = useRef<HTMLDivElement>(null);
-  const graph = useRef<Core | null>(null);
-  const commitFocusRef = useRef<(focus: Focus, push?: boolean) => void>(() => {});
+  const graphCanvas = useRef<HTMLCanvasElement>(null);
+  const graphView = useRef<GraphView>({ zoom: 1, x: 0, y: 0 });
+  const drawGraph = useRef<() => void>(() => {});
+  const hitTargets = useRef<HitTarget[]>([]);
+  const drag = useRef<{
+    active: boolean;
+    moved: boolean;
+    startX: number;
+    startY: number;
+    viewX: number;
+    viewY: number;
+  } | null>(null);
   const [focus, setFocus] = useState<Focus>({ type: "overview" });
   const [query, setQuery] = useState("");
   const [shareStatus, setShareStatus] = useState("");
   const [graphStatus, setGraphStatus] = useState<GraphStatus>("fallback");
-  const [graphAttempt, setGraphAttempt] = useState(0);
 
   const domainById = useMemo(
     () => new Map(model.domains.map((domain) => [domain.id, domain])),
@@ -232,7 +421,6 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
       }
     }
   }, []);
-  commitFocusRef.current = commitFocus;
 
   useEffect(() => {
     const updateFromHistory = () => commitFocus(parseHash(window.location.hash), false);
@@ -245,168 +433,12 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     };
   }, [commitFocus, parseHash]);
 
-  useEffect(() => {
-    if (!graphContainer.current) return;
-    let cancelled = false;
-    let instance: Core | null = null;
-
-    const loadTimer = window.setTimeout(() => {
-      if (!cancelled && !instance) setGraphStatus("slow");
-    }, GRAPH_LOAD_TIMEOUT_MS);
-
-    async function initialise() {
-      const { default: cytoscape } = await import("cytoscape");
-      if (cancelled || !graphContainer.current) return;
-      setGraphStatus("loading");
-
-      instance = cytoscape({
-        container: graphContainer.current,
-        elements: graphElements(model),
-        layout: { name: "preset", fit: true, padding: 72 },
-        minZoom: 0.35,
-        maxZoom: 2.3,
-        boxSelectionEnabled: false,
-        style: [
-          {
-            selector: "node",
-            style: {
-              "background-color": "#d7d7d2",
-              "border-color": "#f7f7f4",
-              "border-width": 1.5,
-              color: "#f7f7f4",
-              label: "data(label)",
-              "font-family": "Manrope, Arial, sans-serif",
-              "font-size": 10,
-              "font-weight": 600,
-              "min-zoomed-font-size": 7,
-              "text-background-color": "#080808",
-              "text-background-opacity": 0.78,
-              "text-background-padding": "3px",
-              "text-margin-y": 9,
-              "text-max-width": "120px",
-              "text-valign": "bottom",
-              "text-wrap": "wrap",
-              height: 14,
-              width: 14,
-            },
-          },
-          {
-            selector: 'node[role = "root"]',
-            style: {
-              "background-color": "#ffffff",
-              "border-color": "#ffffff",
-              color: "#ffffff",
-              "font-size": 13,
-              "font-weight": 700,
-              height: 44,
-              shape: "round-rectangle",
-              width: 82,
-            },
-          },
-          {
-            selector: 'node[role = "domain"]',
-            style: {
-              "background-color": "#f2f2ee",
-              "border-color": "#ffffff",
-              "font-size": 11,
-              height: 28,
-              width: 28,
-            },
-          },
-          {
-            selector: 'node[role = "component"]',
-            style: {
-              "background-color": "#8c8c87",
-              "border-width": 1,
-              "font-size": 8,
-              height: 8,
-              width: 8,
-            },
-          },
-          {
-            selector: "edge",
-            style: {
-              "curve-style": "bezier",
-              "line-color": "#5a5a57",
-              opacity: 0.72,
-              width: 1,
-            },
-          },
-          {
-            selector: 'edge[kind != "hierarchy"]',
-            style: {
-              "line-color": "#bdbdb8",
-              "line-style": "dashed",
-              "target-arrow-color": "#bdbdb8",
-              "target-arrow-shape": "triangle",
-              "arrow-scale": 0.6,
-              width: 1.25,
-            },
-          },
-          {
-            selector: ".is-hidden",
-            style: { display: "none" },
-          },
-          {
-            selector: ".is-dim",
-            style: { opacity: 0.14 },
-          },
-          {
-            selector: ".is-context",
-            style: { opacity: 0.5 },
-          },
-          {
-            selector: ".is-selected",
-            style: {
-              "background-color": "#ffffff",
-              "border-color": "#ffffff",
-              "border-width": 4,
-              color: "#ffffff",
-              opacity: 1,
-              "z-index": 20,
-            },
-          },
-        ],
-      });
-
-      instance.on("tap", "node", (event: EventObjectNode) => {
-        const node = event.target as NodeSingular;
-        const role = node.data("role");
-        if (role === "root") commitFocusRef.current({ type: "overview" });
-        if (role === "domain") {
-          commitFocusRef.current({ type: "domain", id: node.id() });
-        }
-        if (role === "cluster") {
-          commitFocusRef.current({ type: "cluster", id: node.id() });
-        }
-        if (role === "component") {
-          commitFocusRef.current({ type: "component", id: node.id() });
-        }
-      });
-
-      graph.current = instance;
-      window.clearTimeout(loadTimer);
-      setGraphStatus("ready");
-    }
-
-    initialise().catch(() => {
-      window.clearTimeout(loadTimer);
-      if (!cancelled) setGraphStatus("failed");
-    });
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(loadTimer);
-      graph.current = null;
-      instance?.destroy();
-    };
-  }, [graphAttempt, model]);
-
-  useEffect(() => {
-    const cy = graph.current;
-    if (!cy) return;
-
-    const visible = new Set<string>([ROOT_ID, ...model.domains.map((domain) => domain.id)]);
+  const graphModel = useMemo(() => buildGraph(model), [model]);
+  const graphPresentation = useMemo<GraphPresentation>(() => {
+    const visible = new Set<string>([
+      ROOT_ID,
+      ...model.domains.map((domain) => domain.id),
+    ]);
     const selected = new Set<string>();
     const context = new Set<string>();
     const bridges = new Set<string>();
@@ -455,44 +487,145 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     if (focus.type === "component") selected.add(focus.id);
     if (focus.type === "domain") selected.add(focus.id);
 
-    cy.batch(() => {
-      cy.elements().removeClass("is-hidden is-dim is-context is-selected");
-      cy.nodes().forEach((node: NodeSingular) => {
-        if (!visible.has(node.id())) node.addClass("is-hidden");
-        else if (context.has(node.id())) node.addClass("is-context");
-        else if (
-          focusDomain &&
-          node.data("role") === "domain" &&
-          node.id() !== focusDomain.id
-        ) {
-          node.addClass("is-dim");
-        }
-        if (selected.has(node.id())) node.addClass("is-selected");
-      });
-      cy.edges().forEach((edge: EdgeSingular) => {
-        const endpointsVisible =
-          visible.has(edge.source().id()) && visible.has(edge.target().id());
-        const bridgeVisible =
-          edge.data("kind") === "hierarchy" || bridges.has(edge.id());
-        if (!endpointsVisible || !bridgeVisible) edge.addClass("is-hidden");
-        if (edge.data("kind") !== "hierarchy") edge.addClass("is-context");
-      });
-    });
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const shown = cy.elements(":visible");
-    if (reduceMotion) cy.fit(shown, 72);
-    else cy.animate({ fit: { eles: shown, padding: 72 }, duration: 360 });
+    return {
+      visible,
+      selected,
+      context,
+      bridges,
+      focusDomainId: focusDomain?.id,
+    };
   }, [
     clusterById,
     clusterEntries,
     componentById,
     domainById,
     focus,
-    graphStatus,
     model.domains,
     model.relationships,
   ]);
+
+  useEffect(() => {
+    graphView.current = { zoom: 1, x: 0, y: 0 };
+  }, [focus]);
+
+  useEffect(() => {
+    const canvas = graphCanvas.current;
+    if (!canvas) return;
+    let active = true;
+    const draw = () => {
+      if (!active) return;
+      try {
+        const targets = renderGraph(
+          canvas,
+          graphModel,
+          graphPresentation,
+          graphView.current,
+        );
+        hitTargets.current = targets;
+        if (targets.length > 0) setGraphStatus("ready");
+      } catch {
+        hitTargets.current = [];
+        setGraphStatus("fallback");
+      }
+    };
+    drawGraph.current = draw;
+    draw();
+
+    const observer = new ResizeObserver(draw);
+    observer.observe(canvas);
+    void document.fonts?.ready.then(draw);
+    return () => {
+      active = false;
+      observer.disconnect();
+      drawGraph.current = () => {};
+    };
+  }, [graphModel, graphPresentation]);
+
+  function handleGraphWheel(event: ReactWheelEvent<HTMLCanvasElement>) {
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const localX = event.clientX - rect.left - rect.width / 2;
+    const localY = event.clientY - rect.top - rect.height / 2;
+    const previousZoom = graphView.current.zoom;
+    const nextZoom = Math.min(
+      2.4,
+      Math.max(0.55, previousZoom * Math.exp(-event.deltaY * 0.0015)),
+    );
+    const ratio = nextZoom / previousZoom;
+    graphView.current = {
+      zoom: nextZoom,
+      x: localX - (localX - graphView.current.x) * ratio,
+      y: localY - (localY - graphView.current.y) * ratio,
+    };
+    drawGraph.current();
+  }
+
+  function handleGraphPointerDown(event: ReactPointerEvent<HTMLCanvasElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    drag.current = {
+      active: true,
+      moved: false,
+      startX: event.clientX,
+      startY: event.clientY,
+      viewX: graphView.current.x,
+      viewY: graphView.current.y,
+    };
+    event.currentTarget.style.cursor = "grabbing";
+  }
+
+  function handleGraphPointerMove(event: ReactPointerEvent<HTMLCanvasElement>) {
+    const currentDrag = drag.current;
+    if (currentDrag?.active) {
+      const deltaX = event.clientX - currentDrag.startX;
+      const deltaY = event.clientY - currentDrag.startY;
+      if (Math.abs(deltaX) + Math.abs(deltaY) > 4) currentDrag.moved = true;
+      graphView.current.x = currentDrag.viewX + deltaX;
+      graphView.current.y = currentDrag.viewY + deltaY;
+      drawGraph.current();
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const overNode = hitTargets.current.some(
+      (target) => Math.hypot(target.x - x, target.y - y) <= target.radius,
+    );
+    event.currentTarget.style.cursor = overNode ? "pointer" : "grab";
+  }
+
+  function handleGraphPointerUp(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (drag.current) drag.current.active = false;
+    event.currentTarget.style.cursor = "grab";
+  }
+
+  function handleGraphClick(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (drag.current?.moved) {
+      drag.current = null;
+      return;
+    }
+    drag.current = null;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const target = hitTargets.current.find(
+      (candidate) =>
+        Math.hypot(candidate.x - x, candidate.y - y) <= candidate.radius,
+    );
+    if (!target) return;
+    if (target.node.role === "root") commitFocus({ type: "overview" });
+    if (target.node.role === "domain") {
+      commitFocus({ type: "domain", id: target.node.id });
+    }
+    if (target.node.role === "cluster") {
+      commitFocus({ type: "cluster", id: target.node.id });
+    }
+    if (target.node.role === "component") {
+      commitFocus({ type: "component", id: target.node.id });
+    }
+  }
 
   const searchItems = useMemo<SearchItem[]>(
     () => [
@@ -573,10 +706,6 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     return clusterById.get(id)?.cluster.title ?? id;
   }
 
-  function retryGraph() {
-    setGraphAttempt((attempt) => attempt + 1);
-  }
-
   return (
     <section className={styles.explorer} id="explorer" aria-labelledby="explorer-title">
       <div className={styles.explorerTopline}>
@@ -645,11 +774,6 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
           <div className={styles.graphCaption}>
             <div className={styles.graphStatus} role="status">
               <span>{graphStatusLabels[graphStatus]}</span>
-              {(graphStatus === "slow" || graphStatus === "failed") && (
-                <button onClick={retryGraph} type="button">
-                  Retry map
-                </button>
-              )}
             </div>
             <span className={styles.graphHint}>
               {graphStatus === "ready"
@@ -671,11 +795,18 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
               width={1600}
             />
           </div>
-          <div
+          <canvas
             aria-hidden="true"
             className={styles.graphCanvas}
+            data-renderer="native-canvas"
             data-ready={graphStatus === "ready"}
-            ref={graphContainer}
+            onClick={handleGraphClick}
+            onPointerDown={handleGraphPointerDown}
+            onPointerMove={handleGraphPointerMove}
+            onPointerUp={handleGraphPointerUp}
+            onPointerCancel={handleGraphPointerUp}
+            onWheel={handleGraphWheel}
+            ref={graphCanvas}
           />
         </div>
 

@@ -256,9 +256,57 @@
   pointer-events: none;
 }
 
+.graphStatus {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.graphStatus button {
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: #f7f7f4;
+  font: inherit;
+  pointer-events: auto;
+}
+
+.graphFallback,
 .graphCanvas {
   position: absolute;
   inset: 40px 0 0;
+}
+
+.graphFallback {
+  display: grid;
+  place-items: center;
+  opacity: 1;
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.graphFallback[data-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.graphFallback img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.76;
+}
+
+.graphCanvas {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.graphCanvas[data-ready="true"] {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .inspector {
@@ -643,7 +691,7 @@
     gap: 4px;
   }
 
-  .graphCaption span:last-child {
+  .graphHint {
     display: none;
   }
 
@@ -686,5 +734,10 @@
   .domainControls,
   .graphPanel {
     scroll-behavior: auto;
+  }
+
+  .graphCanvas,
+  .graphFallback {
+    transition: none;
   }
 }

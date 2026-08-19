@@ -15,6 +15,8 @@
     "validate:capabilities": "node scripts/validate-public-capability-system.mjs"
   },
   "dependencies": {
+    "d3-force": "3.0.0",
+    "force-graph": "1.43.4",
     "next": "16.2.12",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -23,6 +25,7 @@
     "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "4.2.1",
+    "@types/d3-force": "3.0.10",
     "@types/node": "22.19.19",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",

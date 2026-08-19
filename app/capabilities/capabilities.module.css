@@ -274,7 +274,8 @@
 }
 
 .graphFallback,
-.graphCanvas {
+.forceGraph,
+.recoveryCanvas {
   position: absolute;
   inset: 40px 0 0;
 }
@@ -298,10 +299,10 @@
   opacity: 0.76;
 }
 
-.graphCanvas {
+.forceGraph,
+.recoveryCanvas {
   width: 100%;
   height: calc(100% - 40px);
-  cursor: grab;
   opacity: 0;
   pointer-events: none;
   touch-action: none;
@@ -309,9 +310,35 @@
   transition: opacity 180ms ease;
 }
 
-.graphCanvas[data-ready="true"] {
+.forceGraph {
+  cursor: grab;
+}
+
+.forceGraph canvas {
+  display: block;
+}
+
+.forceGraph[data-ready="true"],
+.recoveryCanvas[data-ready="true"] {
   opacity: 1;
   pointer-events: auto;
+}
+
+:global(.agila-graph-tooltip) {
+  display: flex;
+  max-width: 270px;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid #4b4b48;
+  background: #11110f;
+  color: #f7f7f4;
+  font: 0.68rem Manrope, Arial, sans-serif;
+}
+
+:global(.agila-graph-tooltip span) {
+  color: #a9aaa5;
+  font-size: 0.58rem;
 }
 
 .inspector {
@@ -741,7 +768,8 @@
     scroll-behavior: auto;
   }
 
-  .graphCanvas,
+  .forceGraph,
+  .recoveryCanvas,
   .graphFallback {
     transition: none;
   }

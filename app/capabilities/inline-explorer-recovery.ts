@@ -18,7 +18,7 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
 
     var model = payload.model;
     var classes = payload.classes;
-    var canvas = root.querySelector('canvas[data-renderer="native-canvas"]');
+    var canvas = root.querySelector('canvas[data-renderer="native-recovery"]');
     var fallback = root.querySelector("[data-recovery-fallback]");
     var status = root.querySelector("[data-recovery-status]");
     var hint = root.querySelector("[data-recovery-hint]");
@@ -149,10 +149,15 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       model.domains.forEach(function (domain) {
         visible[domain.id] = true;
       });
-      if (focus.type === "all") {
+      if (focus.type === "overview" || focus.type === "all") {
         model.domains.forEach(function (domain) {
           domain.clusters.forEach(function (cluster) {
             visible[cluster.id] = true;
+            if (focus.type === "all") {
+              cluster.components.forEach(function (component) {
+                visible[component.id] = true;
+              });
+            }
           });
         });
         model.relationships.forEach(function (relationship) {
@@ -165,6 +170,11 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         selectedDomain.clusters.forEach(function (cluster) {
           visible[cluster.id] = true;
           local[cluster.id] = true;
+          if (!selectedCluster) {
+            cluster.components.forEach(function (component) {
+              visible[component.id] = true;
+            });
+          }
         });
         model.relationships.forEach(function (relationship) {
           var localSource = local[relationship.source];

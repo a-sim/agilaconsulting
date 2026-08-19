@@ -53,7 +53,7 @@ test("exports the public interactive capability system", async () => {
 
   assert.match(html, /Capabilities that work as a system/);
   assert.match(html, /Interactive capability system/);
-  assert.match(html, /All 24 areas/);
+  assert.match(html, /All .*124.* capabilities/);
   assert.match(html, /Search the capability system/);
   assert.match(html, /AI, data and analytics/);
   assert.match(html, /Business and operating-model transformation/);
@@ -68,6 +68,9 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /A visual overview remains available/);
   assert.match(html, /agila-capability-recovery-data/);
   assert.match(html, /__agilaCapabilityRecoveryCleanup/);
+  assert.match(html, /data-renderer="force-graph"/);
+  assert.match(html, /data-node-count="31"/);
+  assert.match(html, /data-link-count="42"/);
   assert.match(html, /Browse the complete capability list/);
   assert.match(html, /canonical.*\/capabilities\//i);
   assert.doesNotMatch(html, /OpenClaw|FactoVia|RMT Labs|Mayker/);

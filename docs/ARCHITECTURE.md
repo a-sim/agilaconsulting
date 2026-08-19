@@ -62,11 +62,12 @@ The legal page stays separate because company identifiers and privacy wording
 need a higher approval threshold than marketing copy.
 
 The capabilities page renders a complete semantic HTML taxonomy and enhances it
-with a route-only Cytoscape canvas. The graph uses deterministic positions,
-client-side search and shareable focus hashes. The homepage teaser is static and
-does not load Cytoscape or the public ontology. A positive-schema validator
-blocks private fields, names, dangling relationships and unexpected model
-changes before the static build runs.
+with a route-only Force Graph canvas. A D3 force simulation clusters the six
+public domains while client-side search, semantic-detail views and shareable
+focus hashes preserve direct navigation. The homepage teaser is static and does
+not load Force Graph or the public ontology. A positive-schema validator blocks
+private fields, names, dangling relationships and unexpected model changes
+before the static build runs.
 
 ## Security and privacy
 

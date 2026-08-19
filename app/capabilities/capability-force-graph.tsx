@@ -20,6 +20,7 @@ type PublicGraphNode = NodeObject & {
   id: string;
   label: string;
   role: "root" | "domain" | "cluster" | "component";
+  colour: string;
   domainId?: string;
   parentId?: string;
   anchorX: number;
@@ -56,8 +57,24 @@ type CapabilityForceGraphProps = {
 };
 
 const ROOT_ID = "agila";
-const DOMAIN_RADIUS = 330;
-const DOMAIN_START_ANGLE = -Math.PI / 2;
+
+export const DOMAIN_COLOURS: Record<string, string> = {
+  "data-ai": "#735BEA",
+  transformation: "#B77A16",
+  architecture: "#3D7EA6",
+  industrial: "#24A6B3",
+  "digital-products": "#4C91D1",
+  governance: "#C16492",
+};
+
+const DOMAIN_ANCHORS: Record<string, { x: number; y: number }> = {
+  transformation: { x: -430, y: -250 },
+  architecture: { x: 380, y: -270 },
+  industrial: { x: 475, y: 20 },
+  "data-ai": { x: 350, y: 285 },
+  "digital-products": { x: -150, y: 345 },
+  governance: { x: -470, y: 95 },
+};
 
 function hashUnit(value: string, salt: number) {
   let hash = 2166136261 ^ salt;
@@ -68,12 +85,19 @@ function hashUnit(value: string, salt: number) {
   return (hash >>> 0) / 4_294_967_295;
 }
 
-function domainAnchor(index: number, total: number) {
-  const angle = DOMAIN_START_ANGLE + (index / total) * Math.PI * 2;
+function domainAnchor(id: string, index: number, total: number) {
+  const configured = DOMAIN_ANCHORS[id];
+  if (configured) {
+    return {
+      angle: Math.atan2(configured.y, configured.x),
+      ...configured,
+    };
+  }
+  const angle = -Math.PI / 2 + (index / total) * Math.PI * 2;
   return {
     angle,
-    x: Math.cos(angle) * DOMAIN_RADIUS,
-    y: Math.sin(angle) * DOMAIN_RADIUS,
+    x: Math.cos(angle) * 440,
+    y: Math.sin(angle) * 300,
   };
 }
 
@@ -83,6 +107,7 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
       id: ROOT_ID,
       label: "Agila",
       role: "root",
+      colour: "#F7F7F4",
       anchorX: 0,
       anchorY: 0,
       order: 0,
@@ -93,11 +118,13 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
   const links: PublicGraphLink[] = [];
 
   model.domains.forEach((domain, domainIndex) => {
-    const anchor = domainAnchor(domainIndex, model.domains.length);
+    const anchor = domainAnchor(domain.id, domainIndex, model.domains.length);
+    const colour = DOMAIN_COLOURS[domain.id] ?? "#A9AAA5";
     nodes.push({
       id: domain.id,
       label: domain.title,
       role: "domain",
+      colour,
       domainId: domain.id,
       anchorX: anchor.x,
       anchorY: anchor.y,
@@ -116,13 +143,15 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
     domain.clusters.forEach((cluster, clusterIndex) => {
       const localAngle =
         anchor.angle +
-        (clusterIndex - (domain.clusters.length - 1) / 2) * 0.24;
-      const clusterX = anchor.x + Math.cos(localAngle) * 112;
-      const clusterY = anchor.y + Math.sin(localAngle) * 112;
+        (clusterIndex - (domain.clusters.length - 1) / 2) * 0.48;
+      const clusterRadius = 92 + (clusterIndex % 2) * 16;
+      const clusterX = anchor.x + Math.cos(localAngle) * clusterRadius;
+      const clusterY = anchor.y + Math.sin(localAngle) * clusterRadius;
       nodes.push({
         id: cluster.id,
         label: cluster.title,
         role: "cluster",
+        colour,
         domainId: domain.id,
         parentId: domain.id,
         anchorX: clusterX,
@@ -143,13 +172,14 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
         const componentAngle =
           (componentIndex / cluster.components.length) * Math.PI * 2 +
           hashUnit(component.id, 3) * 0.3;
-        const componentRadius = 34 + hashUnit(component.id, 4) * 20;
+        const componentRadius = 24 + hashUnit(component.id, 4) * 20;
         const componentX = clusterX + Math.cos(componentAngle) * componentRadius;
         const componentY = clusterY + Math.sin(componentAngle) * componentRadius;
         nodes.push({
           id: component.id,
           label: component.title,
           role: "component",
+          colour,
           domainId: domain.id,
           parentId: cluster.id,
           anchorX: clusterX,
@@ -214,12 +244,7 @@ function visiblePublicGraph(
       ? selectedNode.parentId
       : undefined;
 
-  if (focus.type === "overview") {
-    graph.nodes
-      .filter((node) => node.role === "cluster")
-      .forEach((node) => visible.add(node.id));
-    model.relationships.forEach((relationship) => bridgeIds.add(relationship.id));
-  } else if (focus.type === "all") {
+  if (focus.type === "overview" || focus.type === "all") {
     graph.nodes.forEach((node) => visible.add(node.id));
     model.relationships.forEach((relationship) => bridgeIds.add(relationship.id));
   } else if (selectedDomainId) {
@@ -264,21 +289,21 @@ function visiblePublicGraph(
 }
 
 function nodeRadius(node: PublicGraphNode) {
-  if (node.role === "root") return 24;
-  if (node.role === "domain") return 18;
-  if (node.role === "cluster") return 9;
-  return 4.2;
+  if (node.role === "root") return 19;
+  if (node.role === "domain") return 22;
+  if (node.role === "cluster") return 10;
+  return 4.5;
 }
 
 function nodeValue(node: PublicGraphNode) {
   return Math.max(0.6, (nodeRadius(node) / 4) ** 2);
 }
 
-function nodeFill(node: PublicGraphNode) {
-  if (node.role === "root") return "#f7f7f4";
-  if (node.role === "domain") return "#deded8";
-  if (node.role === "cluster") return "#a9aaa5";
-  return "#676964";
+function colourWithAlpha(colour: string, alpha: number) {
+  const red = Number.parseInt(colour.slice(1, 3), 16);
+  const green = Number.parseInt(colour.slice(3, 5), 16);
+  const blue = Number.parseInt(colour.slice(5, 7), 16);
+  return `rgba(${red},${green},${blue},${alpha})`;
 }
 
 function escapeHtml(value: string) {
@@ -292,21 +317,21 @@ function escapeHtml(value: string) {
 
 function configureForces(graph: ForceGraphInstance) {
   graph.d3Force("charge")?.strength?.((node: PublicGraphNode) => {
-    if (node.role === "root") return -600;
-    if (node.role === "domain") return -340;
-    if (node.role === "cluster") return -115;
-    return -24;
+    if (node.role === "root") return -860;
+    if (node.role === "domain") return -460;
+    if (node.role === "cluster") return -145;
+    return -27;
   });
   graph.d3Force("link")
     ?.distance?.((link: PublicGraphLink) => {
-      if (link.kind === "bridge") return 120;
+      if (link.kind === "bridge") return 150;
       const target = typeof link.target === "object" ? link.target : undefined;
-      if (target?.role === "domain") return 230;
-      if (target?.role === "cluster") return 72;
-      return 24;
+      if (target?.role === "domain") return 300;
+      if (target?.role === "cluster") return 86;
+      return 22;
     })
     ?.strength?.((link: PublicGraphLink) =>
-      link.kind === "bridge" ? 0.035 : 0.62,
+      link.kind === "bridge" ? 0.018 : 0.7,
     );
 
   graph.d3Force(
@@ -320,12 +345,12 @@ function configureForces(graph: ForceGraphInstance) {
     for (const node of anchoredNodes) {
       const strength =
         node.role === "root"
-          ? 0.3
+          ? 0.42
           : node.role === "domain"
-            ? 0.19
+            ? 0.34
             : node.role === "cluster"
-              ? 0.09
-              : 0.025;
+              ? 0.2
+              : 0.07;
       node.vx = (node.vx ?? 0) + (node.anchorX - (node.x ?? 0)) * strength * alpha;
       node.vy = (node.vy ?? 0) + (node.anchorY - (node.y ?? 0)) * strength * alpha;
     }
@@ -342,17 +367,28 @@ function drawNode(
   node: PublicGraphNode,
   context: CanvasRenderingContext2D,
   selected: string | undefined,
+  selectedDomain: string | undefined,
 ) {
   const radius = nodeRadius(node);
   const isSelected = selected === node.id;
+  const isContext =
+    selectedDomain && node.role !== "root" && node.domainId !== selectedDomain;
   context.save();
+  context.globalAlpha = isContext ? 0.28 : node.role === "component" ? 0.92 : 0.98;
   context.beginPath();
   context.arc(node.x ?? 0, node.y ?? 0, radius, 0, Math.PI * 2);
-  context.fillStyle = nodeFill(node);
+  context.fillStyle = node.colour;
   context.fill();
-  context.lineWidth = isSelected ? 3.2 : node.role === "component" ? 0.8 : 1.4;
-  context.strokeStyle = isSelected ? "#ffffff" : "rgba(255,255,255,.42)";
+  context.lineWidth = isSelected ? 3.2 : node.role === "component" ? 0.9 : 1.6;
+  context.strokeStyle = isSelected ? "#ffffff" : "rgba(255,255,255,.38)";
   context.stroke();
+  if (node.role === "domain" && !isContext) {
+    context.beginPath();
+    context.arc(node.x ?? 0, node.y ?? 0, radius + 4, 0, Math.PI * 2);
+    context.lineWidth = 1;
+    context.strokeStyle = colourWithAlpha(node.colour, 0.58);
+    context.stroke();
+  }
   if (isSelected) {
     context.beginPath();
     context.arc(node.x ?? 0, node.y ?? 0, radius + 5, 0, Math.PI * 2);
@@ -363,11 +399,16 @@ function drawNode(
   context.restore();
 }
 
-function labelTier(node: PublicGraphNode, selected: string | undefined, scale: number) {
+function labelTier(
+  node: PublicGraphNode,
+  selected: string | undefined,
+  scale: number,
+  detail: CapabilityFocus["type"],
+) {
   if (node.id === selected) return 5;
   if (node.role === "root" || node.role === "domain") return 4;
   if (node.role === "cluster") return 3;
-  if (scale > 1.55) return 1;
+  if (scale > (detail === "all" ? 0.55 : 1.55)) return 1;
   return 0;
 }
 
@@ -403,6 +444,7 @@ export function CapabilityForceGraph({
   const focusType = useRef(focus.type);
   const fitTimer = useRef<number | undefined>(undefined);
   const selected = useRef<string | undefined>(undefined);
+  const selectedDomain = useRef<string | undefined>(undefined);
   const onReadyRef = useRef(onReady);
   const onSelectRef = useRef(onSelect);
   const [ready, setReady] = useState(false);
@@ -417,6 +459,11 @@ export function CapabilityForceGraph({
     [focus, graphModel, model],
   );
   selected.current = presentation.selectedId;
+  const selectedNode = presentation.selectedId
+    ? graphModel.nodeById.get(presentation.selectedId)
+    : undefined;
+  selectedDomain.current =
+    selectedNode?.role === "domain" ? selectedNode.id : selectedNode?.domainId;
 
   useEffect(() => {
     if (!host.current) return;
@@ -431,12 +478,17 @@ export function CapabilityForceGraph({
       const { default: createForceGraph } = await import("force-graph");
       if (cancelled) return;
       graph = createForceGraph()(graphElement)
-        .backgroundColor("#080808")
+        .backgroundColor("#070A0F")
         .nodeId("id")
         .nodeRelSize(4)
         .nodeVal((rawNode) => nodeValue(rawNode as PublicGraphNode))
         .nodeCanvasObject((rawNode, context) =>
-          drawNode(rawNode as PublicGraphNode, context, selected.current),
+          drawNode(
+            rawNode as PublicGraphNode,
+            context,
+            selected.current,
+            selectedDomain.current,
+          ),
         )
         .nodePointerAreaPaint((rawNode, colour, context) => {
           const node = rawNode as PublicGraphNode;
@@ -463,14 +515,22 @@ export function CapabilityForceGraph({
                   : "Capability system";
           return `<div class="agila-graph-tooltip"><strong>${escapeHtml(node.label)}</strong><span>${role}</span></div>`;
         })
-        .linkColor((rawLink) =>
-          (rawLink as PublicGraphLink).kind === "bridge"
-            ? "rgba(220,220,214,.46)"
-            : "rgba(174,176,170,.22)",
-        )
-        .linkWidth((rawLink) =>
-          (rawLink as PublicGraphLink).kind === "bridge" ? 1.05 : 0.72,
-        )
+        .linkColor((rawLink) => {
+          const link = rawLink as PublicGraphLink;
+          if (link.kind === "bridge") return "rgba(218,223,230,.42)";
+          const target =
+            typeof link.target === "object" ? link.target : undefined;
+          return target
+            ? colourWithAlpha(target.colour, target.role === "domain" ? 0.34 : 0.28)
+            : "rgba(174,176,170,.22)";
+        })
+        .linkWidth((rawLink) => {
+          const link = rawLink as PublicGraphLink;
+          if (link.kind === "bridge") return 0.95;
+          const target =
+            typeof link.target === "object" ? link.target : undefined;
+          return target?.role === "component" ? 0.62 : 0.82;
+        })
         .linkLineDash((rawLink) =>
           (rawLink as PublicGraphLink).kind === "bridge" ? [5, 6] : null,
         )
@@ -496,7 +556,12 @@ export function CapabilityForceGraph({
                 node.role === "cluster" &&
                 node.id !== selected.current
                   ? 0
-                  : labelTier(node, selected.current, scale),
+                  : labelTier(
+                      node,
+                      selected.current,
+                      scale,
+                      focusType.current,
+                    ),
               screen: graph?.graph2ScreenCoords(node.x ?? 0, node.y ?? 0) ?? {
                 x: 0,
                 y: 0,
@@ -529,13 +594,20 @@ export function CapabilityForceGraph({
           context.textBaseline = "middle";
           for (const { node, tier, screen } of candidates) {
             if (placed.length >= maxLabels) break;
-            const fontSize = tier >= 4 ? 12 : tier === 3 ? 10.5 : 9;
+            const fontSize =
+              tier >= 4
+                ? width < 600
+                  ? 12.5
+                  : 15
+                : tier === 3
+                  ? 11.5
+                  : 9.5;
             const graphFontSize = fontSize / scale;
-            context.font = `${tier >= 4 ? 700 : 600} ${graphFontSize}px Manrope, Arial, sans-serif`;
+            context.font = `${tier >= 3 ? 700 : 600} ${graphFontSize}px Manrope, Arial, sans-serif`;
             const lines = wrapLabel(
               node.label,
-              width < 600 ? 20 : node.role === "domain" ? 30 : 34,
-              node.role === "domain" ? (width < 600 ? 3 : 2) : 2,
+              width < 600 ? 16 : node.role === "domain" ? 34 : 30,
+              node.role === "domain" ? (width < 600 ? 4 : 2) : 2,
             );
             const lineHeight = fontSize + 2;
             const widthOnScreen =
@@ -567,7 +639,7 @@ export function CapabilityForceGraph({
               nodeRadius(node) -
               (heightOnScreen - lineHeight / 2) / scale;
             context.lineWidth = 3.4 / scale;
-            context.strokeStyle = "rgba(8,8,8,.94)";
+            context.strokeStyle = "rgba(7,10,15,.96)";
             lines.forEach((line, index) => {
               const graphY = firstGraphY + (index * lineHeight) / scale;
               context.strokeText(line, node.x ?? 0, graphY);
@@ -577,9 +649,9 @@ export function CapabilityForceGraph({
           }
           context.restore();
         })
-        .warmupTicks(60)
-        .cooldownTicks(220)
-        .minZoom(0.35)
+        .warmupTicks(90)
+        .cooldownTicks(260)
+        .minZoom(0.28)
         .maxZoom(4.5);
 
       configureForces(graph);
@@ -636,10 +708,10 @@ export function CapabilityForceGraph({
         graph.zoomToFit(
           reducedMotion ? 0 : 500,
           host.current && host.current.clientWidth < 600
-            ? 110
+            ? 175
             : focus.type === "all"
-              ? 70
-              : 92,
+              ? 112
+              : 124,
         ),
       reducedMotion ? 40 : 420,
     );
@@ -650,6 +722,8 @@ export function CapabilityForceGraph({
       aria-label={`Interactive Agila capability force graph showing ${presentation.nodes.length} nodes and ${presentation.links.length} connections.`}
       className={className}
       data-link-count={presentation.links.length}
+      data-colour-mode="domain"
+      data-layout="clustered-islands"
       data-node-count={presentation.nodes.length}
       data-ready={ready}
       data-renderer="force-graph"

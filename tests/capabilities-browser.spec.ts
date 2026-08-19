@@ -123,8 +123,11 @@ test("renders the public projection through the bundled Force Graph runtime", as
   const graph = page.locator('[data-renderer="force-graph"]');
   await expect(graph).toBeVisible();
   await expect(graph).toHaveAttribute("data-ready", "true");
-  await expect(graph).toHaveAttribute("data-node-count", "31");
-  await expect(graph).toHaveAttribute("data-link-count", "42");
+  await expect(graph).toHaveAttribute("data-layout", "clustered-islands");
+  await expect(graph).toHaveAttribute("data-colour-mode", "domain");
+  await expect(graph).toHaveAttribute("data-node-count", "131");
+  await expect(graph).toHaveAttribute("data-link-count", "142");
+  await expect(page.locator("[data-domain-legend] li")).toHaveCount(6);
   const canvas = graph.locator("canvas").first();
   await expect(canvas).toBeVisible();
   await expect
@@ -145,6 +148,34 @@ test("renders the public projection through the bundled Force Graph runtime", as
       }),
     )
     .toBe(true);
+  const palettePixels = await canvas.evaluate((element: HTMLCanvasElement) => {
+    const context = element.getContext("2d");
+    if (!context) return [];
+    const targets = [
+      [115, 91, 234],
+      [183, 122, 22],
+      [61, 126, 166],
+      [36, 166, 179],
+      [76, 145, 209],
+      [193, 100, 146],
+    ];
+    const counts = Array.from({ length: targets.length }, () => 0);
+    const pixels = context.getImageData(0, 0, element.width, element.height).data;
+    for (let index = 0; index < pixels.length; index += 4) {
+      targets.forEach((target, targetIndex) => {
+        if (
+          Math.abs(pixels[index] - target[0]) <= 4 &&
+          Math.abs(pixels[index + 1] - target[1]) <= 4 &&
+          Math.abs(pixels[index + 2] - target[2]) <= 4 &&
+          pixels[index + 3] > 0
+        ) {
+          counts[targetIndex] += 1;
+        }
+      });
+    }
+    return counts;
+  });
+  expect(palettePixels.every((count) => count > 10)).toBe(true);
   expect(externalGraphRequests).toEqual([]);
 
   await page.getByRole("button", { name: "All 124 capabilities" }).click();
@@ -236,8 +267,13 @@ test("the complete capability index remains available without JavaScript", async
   await expect(
     page.getByRole("heading", { name: "Browse the complete capability list." }),
   ).toBeVisible();
-  await expect(page.getByText("AI, data and analytics", { exact: true })).toBeVisible();
-  await expect(page.getByText("Governance, delivery and adoption", { exact: true })).toBeVisible();
+  const completeIndex = page.getByLabel("Browse the complete capability list");
+  await expect(
+    completeIndex.getByText("AI, data and analytics", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    completeIndex.getByText("Governance, delivery and adoption", { exact: true }),
+  ).toBeVisible();
   await expect(page.locator('img[src="/agila-capability-system.webp"]')).toBeVisible();
   await context.close();
 });

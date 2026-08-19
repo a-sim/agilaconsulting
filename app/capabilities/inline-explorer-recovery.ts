@@ -17,6 +17,7 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
     }
 
     var model = payload.model;
+    var colours = payload.colours || {};
     var classes = payload.classes;
     var canvas = root.querySelector('canvas[data-renderer="native-recovery"]');
     var fallback = root.querySelector("[data-recovery-fallback]");
@@ -36,10 +37,17 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
     var domainsById = {};
     var clustersById = {};
     var componentsById = {};
-    var nodes = [{ id: "agila", label: "Agila", role: "root", x: 500, y: 370 }];
+    var nodes = [{ id: "agila", label: "Agila", role: "root", colour: "#F7F7F4", x: 500, y: 370 }];
     var edges = [];
     var nodeById = { agila: nodes[0] };
-    var domainAngles = [-90, -150, -30, 30, 90, 150];
+    var domainPoints = {
+      transformation: { x: 225, y: 180 },
+      architecture: { x: 750, y: 165 },
+      industrial: { x: 805, y: 365 },
+      "data-ai": { x: 710, y: 570 },
+      "digital-products": { x: 385, y: 610 },
+      governance: { x: 185, y: 405 },
+    };
 
     function listen(target, name, handler, options) {
       target.addEventListener(name, handler, options);
@@ -57,12 +65,14 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
 
     model.domains.forEach(function (domain, domainIndex) {
       domainsById[domain.id] = domain;
-      var domainAngle = (domainAngles[domainIndex] * Math.PI) / 180;
-      var domainPoint = point(500, 370, 225, domainAngle);
+      var domainPoint = domainPoints[domain.id] || point(500, 370, 225, (-90 + domainIndex * 60) * Math.PI / 180);
+      var domainAngle = Math.atan2(domainPoint.y - 370, domainPoint.x - 500);
+      var colour = colours[domain.id] || "#A9AAA5";
       var domainNode = {
         id: domain.id,
         label: domain.title,
         role: "domain",
+        colour: colour,
         domainId: domain.id,
         x: domainPoint.x,
         y: domainPoint.y,
@@ -73,12 +83,13 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
 
       domain.clusters.forEach(function (cluster, clusterIndex) {
         clustersById[cluster.id] = { domain: domain, cluster: cluster };
-        var spread = (clusterIndex - (domain.clusters.length - 1) / 2) * 0.15;
-        var clusterPoint = point(500, 370, 410, domainAngle + spread);
+        var spread = (clusterIndex - (domain.clusters.length - 1) / 2) * 0.48;
+        var clusterPoint = point(domainPoint.x, domainPoint.y, 82 + (clusterIndex % 2) * 14, domainAngle + spread);
         var clusterNode = {
           id: cluster.id,
           label: cluster.title,
           role: "cluster",
+          colour: colour,
           domainId: domain.id,
           x: clusterPoint.x,
           y: clusterPoint.y,
@@ -87,7 +98,7 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         nodeById[cluster.id] = clusterNode;
         edges.push({ source: domain.id, target: cluster.id, kind: "hierarchy" });
 
-        var componentRadius = cluster.components.length > 4 ? 92 : 68;
+        var componentRadius = cluster.components.length > 4 ? 42 : 31;
         cluster.components.forEach(function (component, componentIndex) {
           componentsById[component.id] = {
             domain: domain,
@@ -104,6 +115,7 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
             id: component.id,
             label: component.title,
             role: "component",
+            colour: colour,
             domainId: domain.id,
             x: componentPoint.x,
             y: componentPoint.y,
@@ -153,11 +165,9 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         model.domains.forEach(function (domain) {
           domain.clusters.forEach(function (cluster) {
             visible[cluster.id] = true;
-            if (focus.type === "all") {
-              cluster.components.forEach(function (component) {
-                visible[component.id] = true;
-              });
-            }
+            cluster.components.forEach(function (component) {
+              visible[component.id] = true;
+            });
           });
         });
         model.relationships.forEach(function (relationship) {
@@ -256,9 +266,9 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         var to = screen(target);
         context2d.beginPath();
         context2d.setLineDash(edge.kind === "bridge" ? [5, 6] : []);
-        context2d.strokeStyle = edge.kind === "bridge" ? "#bdbdb8" : "#5a5a57";
-        context2d.globalAlpha = edge.kind === "bridge" ? 0.48 : 0.72;
-        context2d.lineWidth = edge.kind === "bridge" ? 1.25 : 1;
+        context2d.strokeStyle = edge.kind === "bridge" ? "#D8DEE6" : target.colour;
+        context2d.globalAlpha = edge.kind === "bridge" ? 0.44 : 0.3;
+        context2d.lineWidth = edge.kind === "bridge" ? 1.1 : 0.85;
         context2d.moveTo(from.x, from.y);
         context2d.lineTo(to.x, to.y);
         context2d.stroke();
@@ -267,33 +277,30 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       hitTargets = [];
       visibleNodes.forEach(function (node) {
         var position = screen(node);
-        var radius = node.role === "root" ? 24 : node.role === "domain" ? 14 : node.role === "cluster" ? 7 : 4;
+        var radius = node.role === "root" ? 19 : node.role === "domain" ? 20 : node.role === "cluster" ? 9 : 4.2;
         var dimmed = state.domainId && node.role === "domain" && node.id !== state.domainId;
         context2d.globalAlpha = state.context[node.id] ? 0.5 : dimmed ? 0.16 : 1;
-        context2d.fillStyle = node.role === "component" ? "#8c8c87" : node.role === "cluster" ? "#d7d7d2" : "#f2f2ee";
+        context2d.fillStyle = node.colour;
         context2d.strokeStyle = "#ffffff";
         context2d.lineWidth = state.selected[node.id] ? 4 : 1.5;
         context2d.beginPath();
-        if (node.role === "root") {
-          context2d.rect(position.x - 41, position.y - 22, 82, 44);
-        } else {
-          context2d.arc(position.x, position.y, radius, 0, Math.PI * 2);
-        }
+        context2d.arc(position.x, position.y, radius, 0, Math.PI * 2);
         context2d.fill();
         context2d.stroke();
-        var label = node.label.length > 28 ? node.label.slice(0, 27) + "…" : node.label;
-        var fontSize = node.role === "root" ? 13 : node.role === "domain" ? 11 : node.role === "component" ? 8 : 10;
-        context2d.font = (node.role === "root" ? "700 " : "600 ") + fontSize + "px Manrope, Arial, sans-serif";
-        context2d.textAlign = "center";
-        context2d.textBaseline = "middle";
-        var labelY = node.role === "root" ? position.y : position.y + radius + 12;
-        var textWidth = context2d.measureText(label).width;
-        context2d.fillStyle = node.role === "root" ? "#080808" : "rgba(8, 8, 8, 0.82)";
-        if (node.role !== "root") {
-          context2d.fillRect(position.x - textWidth / 2 - 3, labelY - fontSize / 2 - 2, textWidth + 6, fontSize + 4);
+        var showLabel = node.role !== "component" || view.zoom > 1.45 || state.selected[node.id];
+        if (showLabel) {
+          var label = node.label.length > 38 ? node.label.slice(0, 37) + "…" : node.label;
+          var fontSize = node.role === "root" || node.role === "domain" ? 13 : node.role === "component" ? 8 : 10;
+          context2d.font = (node.role === "root" || node.role === "domain" ? "700 " : "600 ") + fontSize + "px Manrope, Arial, sans-serif";
+          context2d.textAlign = "center";
+          context2d.textBaseline = "middle";
+          var labelY = position.y - radius - 12;
+          context2d.lineWidth = 3.2;
+          context2d.strokeStyle = "rgba(7,10,15,.96)";
+          context2d.strokeText(label, position.x, labelY);
           context2d.fillStyle = "#f7f7f4";
+          context2d.fillText(label, position.x, labelY);
         }
-        context2d.fillText(label, position.x, labelY);
         hitTargets.push({
           node: node,
           x: position.x,
@@ -303,8 +310,10 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       });
       context2d.globalAlpha = 1;
       canvas.setAttribute("data-ready", "true");
+      canvas.setAttribute("data-colour-mode", "domain");
+      canvas.setAttribute("data-layout", "clustered-islands");
       fallback.setAttribute("data-hidden", "true");
-      status.textContent = "Interactive map ready";
+      status.textContent = "Interactive map ready · " + visibleNodes.length + " nodes";
       hint.textContent = "Scroll to zoom · drag to pan · select a node";
     }
 

@@ -100,26 +100,33 @@ test("explores domains, areas, components and search without browser errors", as
     page.getByRole("heading", { name: "UNS, MQTT and industrial connectivity" }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "All 24 areas" }).click();
+  await page.getByRole("button", { name: "All 124 capabilities" }).click();
   await expect(page).toHaveURL(/#all-capability-areas$/);
   expect(errors).toEqual([]);
 });
 
-test("renders the interactive map without a separate graph runtime", async ({
+test("renders the public projection through the bundled Force Graph runtime", async ({
   page,
 }) => {
-  const graphRuntimeRequests: string[] = [];
+  const externalGraphRequests: string[] = [];
   page.on("request", (request) => {
-    if (request.url().toLowerCase().includes("cytoscape")) {
-      graphRuntimeRequests.push(request.url());
+    if (
+      /(?:unpkg|jsdelivr|cdnjs|esm\.sh|force-graph)/i.test(request.url()) &&
+      !request.url().includes("/_next/static/chunks/")
+    ) {
+      externalGraphRequests.push(request.url());
     }
   });
   await page.goto("/capabilities/");
 
   await expect(page.getByText("Interactive map ready")).toBeVisible();
-  const canvas = page.locator('canvas[data-renderer="native-canvas"]');
+  const graph = page.locator('[data-renderer="force-graph"]');
+  await expect(graph).toBeVisible();
+  await expect(graph).toHaveAttribute("data-ready", "true");
+  await expect(graph).toHaveAttribute("data-node-count", "31");
+  await expect(graph).toHaveAttribute("data-link-count", "42");
+  const canvas = graph.locator("canvas").first();
   await expect(canvas).toBeVisible();
-  await expect(canvas).toHaveAttribute("data-ready", "true");
   await expect
     .poll(() =>
       canvas.evaluate((element: HTMLCanvasElement) => {
@@ -138,27 +145,11 @@ test("renders the interactive map without a separate graph runtime", async ({
       }),
     )
     .toBe(true);
-  expect(graphRuntimeRequests).toEqual([]);
+  expect(externalGraphRequests).toEqual([]);
 
-  const canvasBox = await canvas.boundingBox();
-  expect(canvasBox).not.toBeNull();
-  const initialScale = Math.max(
-    0.2,
-    Math.min((canvasBox!.width - 150) / 390, (canvasBox!.height - 150) / 450),
-  );
-  await canvas.click({
-    position: {
-      x: canvasBox!.width / 2,
-      y: canvasBox!.height / 2 - 225 * initialScale,
-    },
-  });
-  await expect(page).toHaveURL(/#domain=data-ai$/);
-  await expect(
-    page.getByRole("heading", { name: "AI, data and analytics" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Browse the complete capability list." }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "All 124 capabilities" }).click();
+  await expect(graph).toHaveAttribute("data-node-count", "131");
+  await expect(graph).toHaveAttribute("data-link-count", "142");
 });
 
 test("recovers the interactive explorer when application chunks are unavailable", async ({
@@ -172,20 +163,9 @@ test("recovers the interactive explorer when application chunks are unavailable"
   await expect(page.getByText("Interactive map ready")).toBeVisible({
     timeout: 5_000,
   });
-  const canvas = page.locator('canvas[data-renderer="native-canvas"]');
+  const canvas = page.locator('canvas[data-renderer="native-recovery"]');
   await expect(canvas).toHaveAttribute("data-ready", "true");
-  const canvasBox = await canvas.boundingBox();
-  expect(canvasBox).not.toBeNull();
-  const initialScale = Math.max(
-    0.2,
-    Math.min((canvasBox!.width - 150) / 390, (canvasBox!.height - 150) / 450),
-  );
-  await canvas.click({
-    position: {
-      x: canvasBox!.width / 2,
-      y: canvasBox!.height / 2 - 225 * initialScale,
-    },
-  });
+  await page.getByRole("button", { name: "01 AI, data and analytics" }).click();
   await expect(page).toHaveURL(/#domain=data-ai$/);
   await expect(
     page.getByRole("heading", { name: "AI, data and analytics" }),

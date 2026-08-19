@@ -21,7 +21,7 @@
 - [ ] Every graph label and relationship is available through semantic HTML.
 - [ ] The public capability model passes its allowlist and privacy scan.
 - [ ] No private ontology, evidence, agent, partner or internal-control field reaches `out/`.
-- [ ] The homepage does not load the Cytoscape route chunk or public capability payload.
+- [ ] The homepage does not load the Force Graph route chunk or public capability payload.
 
 ## Verification
 

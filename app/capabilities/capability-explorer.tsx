@@ -8,9 +8,11 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import {
   CapabilityForceGraph,
+  DOMAIN_COLOURS,
   type CapabilityFocus,
 } from "./capability-force-graph";
 import type {
@@ -32,6 +34,15 @@ type GraphStatus = "fallback" | "ready";
 
 type RecoveryWindow = Window & {
   __agilaCapabilityRecoveryCleanup?: () => void;
+};
+
+const LEGEND_DOMAIN_LABELS: Record<string, string> = {
+  "data-ai": "AI, data and analytics",
+  transformation: "Transformation",
+  architecture: "Architecture",
+  industrial: "Industrial IT/OT",
+  "digital-products": "Digital products",
+  governance: "Governance and adoption",
 };
 
 function focusHash(focus: CapabilityFocus) {
@@ -220,6 +231,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
 
   const recoveryPayload = JSON.stringify({
     model,
+    colours: DOMAIN_COLOURS,
     classes: {
       breadcrumbs: styles.breadcrumbs,
       inspectorContent: styles.inspectorContent,
@@ -347,6 +359,50 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
             }}
             onSelect={commitFocus}
           />
+          <aside
+            aria-label="Capability domain colour legend"
+            className={styles.graphLegend}
+            data-domain-legend="true"
+          >
+            <div className={styles.graphLegendHeading}>
+              <strong>Public capability domains</strong>
+              <span>Colour = domain</span>
+            </div>
+            <ul>
+              {model.domains.map((domain) => (
+                <li key={domain.id}>
+                  <button
+                    aria-pressed={selectedDomain?.id === domain.id}
+                    onClick={() =>
+                      commitFocus({ type: "domain", id: domain.id })
+                    }
+                    type="button"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={styles.graphLegendSwatch}
+                      style={
+                        {
+                          "--domain-colour": DOMAIN_COLOURS[domain.id],
+                        } as CSSProperties
+                      }
+                    />
+                    <span>{LEGEND_DOMAIN_LABELS[domain.id] ?? domain.title}</span>
+                    <small>
+                      {domain.clusters.reduce(
+                        (total, cluster) => total + cluster.components.length,
+                        0,
+                      )}
+                    </small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className={styles.graphLegendLinks}>
+              <span><i aria-hidden="true" />Hierarchy</span>
+              <span><i aria-hidden="true" />Cross-domain connection</span>
+            </div>
+          </aside>
           <canvas
             aria-hidden="true"
             className={styles.recoveryCanvas}

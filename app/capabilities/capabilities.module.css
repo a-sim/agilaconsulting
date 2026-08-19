@@ -324,6 +324,119 @@
   pointer-events: auto;
 }
 
+.graphLegend {
+  position: absolute;
+  z-index: 4;
+  bottom: 14px;
+  left: 14px;
+  width: 248px;
+  border: 1px solid #303947;
+  background: rgb(12 17 24 / 94%);
+  color: #f4f6f8;
+  font-size: 0.64rem;
+}
+
+.graphLegendHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px 8px;
+  border-bottom: 1px solid #303947;
+}
+
+.graphLegendHeading strong {
+  font-size: 0.59rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.graphLegendHeading span {
+  color: #9ba6b5;
+  font-size: 0.55rem;
+}
+
+.graphLegend ul {
+  margin: 0;
+  padding: 5px 0;
+  list-style: none;
+}
+
+.graphLegend li {
+  margin: 0;
+}
+
+.graphLegend button {
+  display: grid;
+  width: 100%;
+  min-height: 30px;
+  grid-template-columns: 10px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 11px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.graphLegend button:hover,
+.graphLegend button[aria-pressed="true"] {
+  background: #18202b;
+}
+
+.graphLegend button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -3px;
+}
+
+.graphLegendSwatch {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 50%;
+  background: var(--domain-colour);
+}
+
+.graphLegend button > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graphLegend small {
+  color: #a8b2c0;
+  font-size: 0.59rem;
+  text-align: right;
+}
+
+.graphLegendLinks {
+  display: grid;
+  grid-template-columns: 0.8fr 1.6fr;
+  gap: 8px;
+  padding: 8px 11px 10px;
+  border-top: 1px solid #303947;
+  color: #a8b2c0;
+  font-size: 0.54rem;
+}
+
+.graphLegendLinks span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graphLegendLinks i {
+  width: 18px;
+  border-top: 1px solid #8995a4;
+}
+
+.graphLegendLinks span:last-child i {
+  border-top-style: dashed;
+  border-top-color: #d8dee6;
+}
+
 :global(.agila-graph-tooltip) {
   display: flex;
   max-width: 270px;
@@ -724,6 +837,10 @@
   }
 
   .graphHint {
+    display: none;
+  }
+
+  .graphLegend {
     display: none;
   }
 

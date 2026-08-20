@@ -14,6 +14,7 @@ import {
   CapabilityForceGraph,
   DOMAIN_COLOURS,
   type CapabilityFocus,
+  type CapabilityForceGraphHandle,
 } from "./capability-force-graph";
 import type {
   CapabilityArea,
@@ -62,6 +63,7 @@ function focusHash(focus: CapabilityFocus) {
 
 export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
   const explorerRoot = useRef<HTMLElement>(null);
+  const graphRef = useRef<CapabilityForceGraphHandle>(null);
   const [focus, setFocus] = useState<CapabilityFocus>({ type: "overview" });
   const [query, setQuery] = useState("");
   const [shareStatus, setShareStatus] = useState("");
@@ -229,13 +231,18 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
     return clusterById.get(id)?.cluster.title ?? id;
   }
 
+  function resetGraph() {
+    commitFocus({ type: "overview" });
+    graphRef.current?.reset();
+  }
+
   const recoveryPayload = JSON.stringify({
     model,
     colours: DOMAIN_COLOURS,
     classes: {
       breadcrumbs: styles.breadcrumbs,
       inspectorContent: styles.inspectorContent,
-      inspectorEmpty: styles.inspectorEmpty,
+      inspectorActions: styles.inspectorActions,
       inspectorList: styles.inspectorList,
       inspectorRole: styles.inspectorRole,
       inspectorTopline: styles.inspectorTopline,
@@ -328,11 +335,29 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
                   : "Visual overview"}
               </span>
             </div>
-            <span className={styles.graphHint} data-recovery-hint="true">
-              {graphStatus === "ready"
-                ? "Scroll to zoom · drag to pan · select a node"
-                : "A visual overview remains available"}
-            </span>
+            <div className={styles.graphActions} aria-label="Map controls">
+              <button
+                data-recovery-action="arrange"
+                onClick={() => graphRef.current?.arrange()}
+                type="button"
+              >
+                Arrange
+              </button>
+              <button
+                data-recovery-action="fit"
+                onClick={() => graphRef.current?.fit()}
+                type="button"
+              >
+                Fit
+              </button>
+              <button
+                data-recovery-action="reset"
+                onClick={resetGraph}
+                type="button"
+              >
+                Reset map
+              </button>
+            </div>
           </div>
           <div
             aria-hidden="true"
@@ -358,6 +383,7 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
               setGraphStatus("ready");
             }}
             onSelect={commitFocus}
+            ref={graphRef}
           />
           <aside
             aria-label="Capability domain colour legend"
@@ -409,31 +435,35 @@ export function CapabilityExplorer({ model }: { model: CapabilitySystem }) {
             data-ready="false"
             data-renderer="native-recovery"
           />
+          <span className={styles.graphHint} data-recovery-hint="true">
+            {graphStatus === "ready"
+              ? "Drag a bubble · drag the background to pan · scroll to zoom"
+              : "A visual overview remains available"}
+          </span>
         </div>
 
         <aside
           aria-live="polite"
           className={styles.inspector}
           data-recovery-inspector="true"
+          hidden={!selectedDomain}
         >
           <div className={styles.inspectorTopline}>
             <span>Selected capability</span>
-            <button onClick={shareView} type="button">
-              Share view
-            </button>
+            <div className={styles.inspectorActions}>
+              <button onClick={shareView} type="button">
+                Share view
+              </button>
+              <button
+                aria-label="Close selected capability"
+                onClick={() => commitFocus({ type: "overview" })}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
           </div>
           {shareStatus && <p className={styles.shareStatus}>{shareStatus}</p>}
-
-          {!selectedDomain && (
-            <div className={styles.inspectorEmpty}>
-              <span>A</span>
-              <h3>Start with one of six domains.</h3>
-              <p>
-                Select a domain to see its capability areas. Choose an area to
-                continue into its components and connections.
-              </p>
-            </div>
-          )}
 
           {selectedDomain && (
             <div className={styles.inspectorContent}>

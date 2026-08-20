@@ -33,11 +33,12 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
     var view = { zoom: 1, x: 0, y: 0 };
     var hitTargets = [];
     var pointer = null;
+    var currentScale = 1;
     var suppressClick = false;
     var domainsById = {};
     var clustersById = {};
     var componentsById = {};
-    var nodes = [{ id: "agila", label: "Agila", role: "root", colour: "#F7F7F4", x: 500, y: 370 }];
+    var nodes = [{ id: "agila", label: "Agila", role: "root", colour: "#F7F7F4", x: 500, y: 370, baseX: 500, baseY: 370 }];
     var edges = [];
     var nodeById = { agila: nodes[0] };
     var domainPoints = {
@@ -76,6 +77,8 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         domainId: domain.id,
         x: domainPoint.x,
         y: domainPoint.y,
+        baseX: domainPoint.x,
+        baseY: domainPoint.y,
       };
       nodes.push(domainNode);
       nodeById[domain.id] = domainNode;
@@ -93,6 +96,8 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
           domainId: domain.id,
           x: clusterPoint.x,
           y: clusterPoint.y,
+          baseX: clusterPoint.x,
+          baseY: clusterPoint.y,
         };
         nodes.push(clusterNode);
         nodeById[cluster.id] = clusterNode;
@@ -119,6 +124,8 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
             domainId: domain.id,
             x: componentPoint.x,
             y: componentPoint.y,
+            baseX: componentPoint.x,
+            baseY: componentPoint.y,
           };
           nodes.push(componentNode);
           nodeById[component.id] = componentNode;
@@ -150,67 +157,27 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
     }
 
     function presentation() {
-      var visible = { agila: true };
+      var visible = {};
       var selected = {};
-      var context = {};
+      var connected = {};
       var bridges = {};
-      var entries = selectedEntries();
-      var selectedDomain = entries.domain;
-      var selectedCluster = entries.cluster;
-
-      model.domains.forEach(function (domain) {
-        visible[domain.id] = true;
-      });
-      if (focus.type === "overview" || focus.type === "all") {
-        model.domains.forEach(function (domain) {
-          domain.clusters.forEach(function (cluster) {
-            visible[cluster.id] = true;
-            cluster.components.forEach(function (component) {
-              visible[component.id] = true;
-            });
-          });
-        });
-        model.relationships.forEach(function (relationship) {
-          bridges[relationship.id] = true;
+      var selectedId = focus.type === "overview" || focus.type === "all" ? null : focus.id;
+      nodes.forEach(function (node) { visible[node.id] = true; });
+      model.relationships.forEach(function (relationship) { bridges[relationship.id] = true; });
+      if (selectedId) {
+        selected[selectedId] = true;
+        connected[selectedId] = true;
+        edges.forEach(function (edge) {
+          if (edge.source === selectedId) connected[edge.target] = true;
+          if (edge.target === selectedId) connected[edge.source] = true;
         });
       }
-      if (selectedDomain) {
-        selected[selectedDomain.id] = true;
-        var local = {};
-        selectedDomain.clusters.forEach(function (cluster) {
-          visible[cluster.id] = true;
-          local[cluster.id] = true;
-          if (!selectedCluster) {
-            cluster.components.forEach(function (component) {
-              visible[component.id] = true;
-            });
-          }
-        });
-        model.relationships.forEach(function (relationship) {
-          var localSource = local[relationship.source];
-          var localTarget = local[relationship.target];
-          if (localSource || localTarget) {
-            bridges[relationship.id] = true;
-            visible[relationship.source] = true;
-            visible[relationship.target] = true;
-            if (!localSource) context[relationship.source] = true;
-            if (!localTarget) context[relationship.target] = true;
-          }
-        });
-      }
-      if (selectedCluster) {
-        selected[selectedCluster.id] = true;
-        selectedCluster.components.forEach(function (component) {
-          visible[component.id] = true;
-        });
-      }
-      if (focus.type === "component") selected[focus.id] = true;
       return {
         visible: visible,
         selected: selected,
-        context: context,
+        connected: connected,
         bridges: bridges,
-        domainId: selectedDomain && selectedDomain.id,
+        selectedId: selectedId,
       };
     }
 
@@ -245,6 +212,7 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       );
       var centreX = (minX + maxX) / 2;
       var centreY = (minY + maxY) / 2;
+      currentScale = scale * view.zoom;
 
       function screen(node) {
         return {
@@ -264,11 +232,12 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         if (!source || !target) return;
         var from = screen(source);
         var to = screen(target);
+        var touchesSelection = state.selectedId && (edge.source === state.selectedId || edge.target === state.selectedId);
         context2d.beginPath();
         context2d.setLineDash(edge.kind === "bridge" ? [5, 6] : []);
-        context2d.strokeStyle = edge.kind === "bridge" ? "#D8DEE6" : target.colour;
-        context2d.globalAlpha = edge.kind === "bridge" ? 0.44 : 0.3;
-        context2d.lineWidth = edge.kind === "bridge" ? 1.1 : 0.85;
+        context2d.strokeStyle = touchesSelection ? "#F1F4F8" : edge.kind === "bridge" ? "#D8DEE6" : target.colour;
+        context2d.globalAlpha = state.selectedId ? touchesSelection ? 0.9 : 0.045 : edge.kind === "bridge" ? 0.36 : 0.26;
+        context2d.lineWidth = touchesSelection ? 1.9 : edge.kind === "bridge" ? 0.85 : 0.72;
         context2d.moveTo(from.x, from.y);
         context2d.lineTo(to.x, to.y);
         context2d.stroke();
@@ -278,8 +247,8 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       visibleNodes.forEach(function (node) {
         var position = screen(node);
         var radius = node.role === "root" ? 19 : node.role === "domain" ? 20 : node.role === "cluster" ? 9 : 4.2;
-        var dimmed = state.domainId && node.role === "domain" && node.id !== state.domainId;
-        context2d.globalAlpha = state.context[node.id] ? 0.5 : dimmed ? 0.16 : 1;
+        var dimmed = state.selectedId && node.role !== "root" && !state.connected[node.id];
+        context2d.globalAlpha = dimmed ? 0.16 : node.role === "component" ? 0.92 : 1;
         context2d.fillStyle = node.colour;
         context2d.strokeStyle = "#ffffff";
         context2d.lineWidth = state.selected[node.id] ? 4 : 1.5;
@@ -312,9 +281,12 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       canvas.setAttribute("data-ready", "true");
       canvas.setAttribute("data-colour-mode", "domain");
       canvas.setAttribute("data-layout", "clustered-islands");
+      canvas.setAttribute("data-node-count", String(visibleNodes.length));
+      canvas.setAttribute("data-link-count", String(edges.length));
+      canvas.setAttribute("data-node-drag", "enabled");
       fallback.setAttribute("data-hidden", "true");
-      status.textContent = "Interactive map ready · " + visibleNodes.length + " nodes";
-      hint.textContent = "Scroll to zoom · drag to pan · select a node";
+      status.textContent = "Interactive map ready · " + visibleNodes.length + " nodes · " + edges.length + " connections";
+      hint.textContent = "Drag a bubble · drag the background to pan · scroll to zoom";
     }
 
     function element(tag, className, text) {
@@ -333,8 +305,16 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
 
     function renderInspector() {
       while (inspector.firstChild) inspector.removeChild(inspector.firstChild);
+      var entries = selectedEntries();
+      var domain = entries.domain;
+      var cluster = entries.cluster;
+      var component = entries.component;
+      inspector.hidden = !domain;
+      if (!domain) return;
+
       var topline = element("div", classes.inspectorTopline);
       topline.appendChild(element("span", "", "Selected capability"));
+      var actions = element("div", classes.inspectorActions);
       var share = element("button", "", "Share view");
       share.type = "button";
       share.onclick = function () {
@@ -342,21 +322,14 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
           navigator.clipboard.writeText(window.location.href);
         }
       };
-      topline.appendChild(share);
+      actions.appendChild(share);
+      var close = element("button", "", "Close");
+      close.type = "button";
+      close.setAttribute("aria-label", "Close selected capability");
+      close.onclick = function () { setFocus({ type: "overview" }); };
+      actions.appendChild(close);
+      topline.appendChild(actions);
       inspector.appendChild(topline);
-
-      var entries = selectedEntries();
-      var domain = entries.domain;
-      var cluster = entries.cluster;
-      var component = entries.component;
-      if (!domain) {
-        var empty = element("div", classes.inspectorEmpty);
-        empty.appendChild(element("span", "", "A"));
-        empty.appendChild(element("h3", "", "Start with one of six domains."));
-        empty.appendChild(element("p", "", "Select a domain to see its capability areas. Choose an area to continue into its components and connections."));
-        inspector.appendChild(empty);
-        return;
-      }
 
       var content = element("div", classes.inspectorContent);
       var breadcrumbs = element("div", classes.breadcrumbs);
@@ -411,7 +384,6 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
 
     function setFocus(nextFocus, push) {
       focus = nextFocus;
-      view = { zoom: 1, x: 0, y: 0 };
       search.value = "";
       clearSearchResults();
       if (push !== false && window.location.hash !== hashFor(nextFocus)) {
@@ -428,6 +400,16 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       draw();
     }
 
+    function restoreLayout(clearFocus) {
+      nodes.forEach(function (node) {
+        node.x = node.baseX;
+        node.y = node.baseY;
+      });
+      view = { zoom: 1, x: 0, y: 0 };
+      if (clearFocus) setFocus({ type: "overview" });
+      else draw();
+    }
+
     root.querySelectorAll("[data-recovery-view]").forEach(function (button) {
       listen(button, "click", function () {
         setFocus({ type: button.getAttribute("data-recovery-view") });
@@ -436,6 +418,16 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
     root.querySelectorAll("[data-recovery-domain]").forEach(function (button) {
       listen(button, "click", function () {
         setFocus({ type: "domain", id: button.getAttribute("data-recovery-domain") });
+      });
+    });
+    root.querySelectorAll("[data-recovery-action]").forEach(function (button) {
+      listen(button, "click", function () {
+        var action = button.getAttribute("data-recovery-action");
+        if (action === "fit") {
+          view = { zoom: 1, x: 0, y: 0 };
+          draw();
+        } else if (action === "arrange") restoreLayout(false);
+        else if (action === "reset") restoreLayout(true);
       });
     });
 
@@ -477,21 +469,62 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
       view.zoom = Math.min(2.4, Math.max(0.55, view.zoom * Math.exp(-event.deltaY * 0.0015)));
       draw();
     }, { passive: false });
+
+    function hitTargetAt(clientX, clientY) {
+      var rect = canvas.getBoundingClientRect();
+      var x = clientX - rect.left;
+      var y = clientY - rect.top;
+      for (var index = 0; index < hitTargets.length; index += 1) {
+        var target = hitTargets[index];
+        var dx = target.x - x;
+        var dy = target.y - y;
+        if (Math.sqrt(dx * dx + dy * dy) <= target.radius) return target;
+      }
+      return null;
+    }
+
     listen(canvas, "pointerdown", function (event) {
-      pointer = { x: event.clientX, y: event.clientY, viewX: view.x, viewY: view.y, moved: false };
+      var target = hitTargetAt(event.clientX, event.clientY);
+      pointer = {
+        x: event.clientX,
+        y: event.clientY,
+        viewX: view.x,
+        viewY: view.y,
+        moved: false,
+        node: target && target.node,
+        nodeX: target && target.node.x,
+        nodeY: target && target.node.y,
+      };
       if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
     });
     listen(canvas, "pointermove", function (event) {
-      if (!pointer) return;
+      if (!pointer) {
+        canvas.style.cursor = hitTargetAt(event.clientX, event.clientY) ? "pointer" : "grab";
+        return;
+      }
       var dx = event.clientX - pointer.x;
       var dy = event.clientY - pointer.y;
       if (Math.abs(dx) + Math.abs(dy) > 4) pointer.moved = true;
-      view.x = pointer.viewX + dx;
-      view.y = pointer.viewY + dy;
+      if (pointer.node) {
+        pointer.node.x = pointer.nodeX + dx / Math.max(currentScale, 0.01);
+        pointer.node.y = pointer.nodeY + dy / Math.max(currentScale, 0.01);
+        canvas.style.cursor = "grabbing";
+        canvas.setAttribute("data-interaction", "node-drag");
+      } else {
+        view.x = pointer.viewX + dx;
+        view.y = pointer.viewY + dy;
+        canvas.style.cursor = "grabbing";
+        canvas.setAttribute("data-interaction", "pan");
+      }
       draw();
     });
     listen(canvas, "pointerup", function () {
       suppressClick = Boolean(pointer && pointer.moved);
+      if (pointer && pointer.node && pointer.moved) {
+        canvas.setAttribute("data-last-dragged", pointer.node.id);
+      }
+      canvas.setAttribute("data-interaction", "idle");
+      canvas.style.cursor = "grab";
       pointer = null;
     });
     listen(canvas, "click", function (event) {
@@ -499,17 +532,9 @@ export const INLINE_EXPLORER_RECOVERY = String.raw`
         suppressClick = false;
         return;
       }
-      var rect = canvas.getBoundingClientRect();
-      var x = event.clientX - rect.left;
-      var y = event.clientY - rect.top;
-      for (var index = 0; index < hitTargets.length; index += 1) {
-        var target = hitTargets[index];
-        var dx = target.x - x;
-        var dy = target.y - y;
-        if (Math.sqrt(dx * dx + dy * dy) <= target.radius) {
-          setFocus({ type: target.node.role === "root" ? "overview" : target.node.role, id: target.node.id });
-          return;
-        }
+      var target = hitTargetAt(event.clientX, event.clientY);
+      if (target) {
+        setFocus({ type: target.node.role === "root" ? "overview" : target.node.role, id: target.node.id });
       }
     });
     listen(window, "resize", draw);

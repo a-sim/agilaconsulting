@@ -73,6 +73,8 @@ test("exports the public interactive capability system", async () => {
   assert.match(html, /data-colour-mode="domain"/);
   assert.match(html, /data-node-count="131"/);
   assert.match(html, /data-link-count="142"/);
+  assert.match(html, /data-node-drag="enabled"/);
+  assert.match(html, /Drag a bubble/);
   assert.match(html, /Public capability domains/);
   assert.match(html, /Colour = domain/);
   assert.match(html, /Browse the complete capability list/);

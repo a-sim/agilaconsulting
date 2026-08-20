@@ -1,5 +1,80 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+async function largestColourNode(
+  canvas: Locator,
+  target: [number, number, number],
+) {
+  const ratio = await canvas.evaluate((element: HTMLCanvasElement, rgb) => {
+    const context = element.getContext("2d");
+    if (!context) return { x: 0, y: 0, pixels: 0 };
+    const { width, height } = element;
+    const pixels = context.getImageData(0, 0, width, height).data;
+    const mask = new Uint8Array(width * height);
+    const seen = new Uint8Array(mask.length);
+    for (let pixel = 0; pixel < mask.length; pixel += 1) {
+      const index = pixel * 4;
+      if (
+        Math.abs(pixels[index] - rgb[0]) <= 4 &&
+        Math.abs(pixels[index + 1] - rgb[1]) <= 4 &&
+        Math.abs(pixels[index + 2] - rgb[2]) <= 4 &&
+        pixels[index + 3] > 200
+      ) {
+        mask[pixel] = 1;
+      }
+    }
+    const stack: number[] = [];
+    let largest = { count: 0, x: 0, y: 0 };
+    for (let pixel = 0; pixel < mask.length; pixel += 1) {
+      if (!mask[pixel] || seen[pixel]) continue;
+      seen[pixel] = 1;
+      stack.push(pixel);
+      let count = 0;
+      let sumX = 0;
+      let sumY = 0;
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        const x = current % width;
+        const y = Math.floor(current / width);
+        count += 1;
+        sumX += x;
+        sumY += y;
+        for (const neighbour of [
+          current - 1,
+          current + 1,
+          current - width,
+          current + width,
+        ]) {
+          if (
+            neighbour >= 0 &&
+            neighbour < mask.length &&
+            mask[neighbour] &&
+            !seen[neighbour] &&
+            Math.abs((neighbour % width) - x) <= 1
+          ) {
+            seen[neighbour] = 1;
+            stack.push(neighbour);
+          }
+        }
+      }
+      if (count > largest.count) {
+        largest = { count, x: sumX / count, y: sumY / count };
+      }
+    }
+    return {
+      x: largest.x / width,
+      y: largest.y / height,
+      pixels: largest.count,
+    };
+  }, target);
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  expect(ratio.pixels).toBeGreaterThan(40);
+  return {
+    x: box!.x + ratio.x * box!.width,
+    y: box!.y + ratio.y * box!.height,
+  };
+}
 
 test("keeps the capability system inside the homepage capability section", async ({
   page,
@@ -77,6 +152,10 @@ test("explores domains, areas, components and search without browser errors", as
   await page.getByRole("button", { name: "01 AI, data and analytics" }).click();
   await expect(page).toHaveURL(/#domain=data-ai$/);
   await expect(page.getByRole("heading", { name: "AI, data and analytics" })).toBeVisible();
+  const graph = page.locator('[data-renderer="force-graph"]');
+  await expect(graph).toHaveAttribute("data-node-count", "131");
+  await expect(graph).toHaveAttribute("data-link-count", "142");
+  await expect(page.locator("[data-recovery-inspector]")).toBeVisible();
 
   await page
     .getByRole("button", { name: /Governed agentic workflows and operating systems/ })
@@ -108,6 +187,7 @@ test("explores domains, areas, components and search without browser errors", as
 test("renders the public projection through the bundled Force Graph runtime", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const externalGraphRequests: string[] = [];
   page.on("request", (request) => {
     if (
@@ -127,7 +207,9 @@ test("renders the public projection through the bundled Force Graph runtime", as
   await expect(graph).toHaveAttribute("data-colour-mode", "domain");
   await expect(graph).toHaveAttribute("data-node-count", "131");
   await expect(graph).toHaveAttribute("data-link-count", "142");
+  await expect(graph).toHaveAttribute("data-node-drag", "enabled");
   await expect(page.locator("[data-domain-legend] li")).toHaveCount(6);
+  await expect(page.locator("[data-recovery-inspector]")).toBeHidden();
   const canvas = graph.locator("canvas").first();
   await expect(canvas).toBeVisible();
   await expect
@@ -186,6 +268,7 @@ test("renders the public projection through the bundled Force Graph runtime", as
 test("recovers the interactive explorer when application chunks are unavailable", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route(/\/_next\/static\/chunks\/.*\.js(?:\?|$)/, (route) =>
     route.abort(),
   );
@@ -196,6 +279,15 @@ test("recovers the interactive explorer when application chunks are unavailable"
   });
   const canvas = page.locator('canvas[data-renderer="native-recovery"]');
   await expect(canvas).toHaveAttribute("data-ready", "true");
+  await expect(canvas).toHaveAttribute("data-node-drag", "enabled");
+  await canvas.scrollIntoViewIfNeeded();
+  const purpleDomain = await largestColourNode(canvas, [115, 91, 234]);
+  await page.mouse.move(purpleDomain.x, purpleDomain.y);
+  await page.mouse.down();
+  await page.mouse.move(purpleDomain.x + 42, purpleDomain.y - 28, { steps: 6 });
+  await expect(canvas).toHaveAttribute("data-interaction", "node-drag");
+  await page.mouse.up();
+  await expect(canvas).toHaveAttribute("data-last-dragged", "data-ai");
   await page.getByRole("button", { name: "01 AI, data and analytics" }).click();
   await expect(page).toHaveURL(/#domain=data-ai$/);
   await expect(

@@ -1,12 +1,19 @@
 "use client";
 
-import { forceCollide } from "d3-force";
+import { forceCollide, forceX, forceY } from "d3-force";
 import type {
   ForceGraphInstance,
   LinkObject,
   NodeObject,
 } from "force-graph";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { CapabilitySystem } from "./ontology-types";
 
 export type CapabilityFocus =
@@ -25,6 +32,8 @@ type PublicGraphNode = NodeObject & {
   parentId?: string;
   anchorX: number;
   anchorY: number;
+  baseAnchorX: number;
+  baseAnchorY: number;
   order: number;
 };
 
@@ -42,18 +51,18 @@ type PublicGraphModel = {
   nodeById: Map<string, PublicGraphNode>;
 };
 
-type VisibleGraph = {
-  nodes: PublicGraphNode[];
-  links: PublicGraphLink[];
-  selectedId?: string;
-};
-
 type CapabilityForceGraphProps = {
   className: string;
   focus: CapabilityFocus;
   model: CapabilitySystem;
   onReady: (nodes: number, links: number) => void;
   onSelect: (focus: CapabilityFocus) => void;
+};
+
+export type CapabilityForceGraphHandle = {
+  arrange: () => void;
+  fit: () => void;
+  reset: () => void;
 };
 
 const ROOT_ID = "agila";
@@ -110,6 +119,8 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
       colour: "#F7F7F4",
       anchorX: 0,
       anchorY: 0,
+      baseAnchorX: 0,
+      baseAnchorY: 0,
       order: 0,
       x: 0,
       y: 0,
@@ -128,6 +139,8 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
       domainId: domain.id,
       anchorX: anchor.x,
       anchorY: anchor.y,
+      baseAnchorX: anchor.x,
+      baseAnchorY: anchor.y,
       order: domain.order,
       x: anchor.x,
       y: anchor.y,
@@ -156,6 +169,8 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
         parentId: domain.id,
         anchorX: clusterX,
         anchorY: clusterY,
+        baseAnchorX: clusterX,
+        baseAnchorY: clusterY,
         order: cluster.order,
         x: clusterX + (hashUnit(cluster.id, 1) - 0.5) * 22,
         y: clusterY + (hashUnit(cluster.id, 2) - 0.5) * 22,
@@ -184,6 +199,8 @@ function buildPublicGraph(model: CapabilitySystem): PublicGraphModel {
           parentId: cluster.id,
           anchorX: clusterX,
           anchorY: clusterY,
+          baseAnchorX: clusterX,
+          baseAnchorY: clusterY,
           order: component.order,
           x: componentX,
           y: componentY,
@@ -224,68 +241,17 @@ function selectedId(focus: CapabilityFocus) {
   return focus.type === "overview" || focus.type === "all" ? undefined : focus.id;
 }
 
-function visiblePublicGraph(
-  graph: PublicGraphModel,
-  model: CapabilitySystem,
-  focus: CapabilityFocus,
-): VisibleGraph {
-  const visible = new Set<string>([
-    ROOT_ID,
-    ...model.domains.map((domain) => domain.id),
-  ]);
-  const bridgeIds = new Set<string>();
-  const selected = selectedId(focus);
-  const selectedNode = selected ? graph.nodeById.get(selected) : undefined;
-  const selectedDomainId = selectedNode?.domainId ??
-    (selectedNode?.role === "domain" ? selectedNode.id : undefined);
-  const selectedClusterId = selectedNode?.role === "cluster"
-    ? selectedNode.id
-    : selectedNode?.role === "component"
-      ? selectedNode.parentId
-      : undefined;
-
-  if (focus.type === "overview" || focus.type === "all") {
-    graph.nodes.forEach((node) => visible.add(node.id));
-    model.relationships.forEach((relationship) => bridgeIds.add(relationship.id));
-  } else if (selectedDomainId) {
-    graph.nodes
-      .filter(
-        (node) =>
-          node.domainId === selectedDomainId &&
-          (node.role !== "component" || !selectedClusterId || node.parentId === selectedClusterId),
-      )
-      .forEach((node) => visible.add(node.id));
-
-    const localAreaIds = new Set(
-      graph.nodes
-        .filter(
-          (node) => node.domainId === selectedDomainId && node.role === "cluster",
-        )
-        .map((node) => node.id),
-    );
-    for (const relationship of model.relationships) {
-      if (
-        localAreaIds.has(relationship.source) ||
-        localAreaIds.has(relationship.target)
-      ) {
-        visible.add(relationship.source);
-        visible.add(relationship.target);
-        bridgeIds.add(relationship.id);
-      }
-    }
-  }
-
-  const nodes = graph.nodes.filter((node) => visible.has(node.id));
-  const links = graph.links.filter((link) => {
+function connectedNodeIds(graph: PublicGraphModel, nodeId: string | undefined) {
+  const connected = new Set<string>();
+  if (!nodeId) return connected;
+  connected.add(nodeId);
+  for (const link of graph.links) {
     const source = endpointId(link.source);
     const target = endpointId(link.target);
-    return (
-      visible.has(source) &&
-      visible.has(target) &&
-      (link.kind === "hierarchy" || bridgeIds.has(link.id))
-    );
-  });
-  return { nodes, links, selectedId: selected };
+    if (source === nodeId) connected.add(target);
+    if (target === nodeId) connected.add(source);
+  }
+  return connected;
 }
 
 function nodeRadius(node: PublicGraphNode) {
@@ -336,43 +302,36 @@ function configureForces(graph: ForceGraphInstance) {
 
   graph.d3Force(
     "collide",
-    forceCollide<PublicGraphNode>((node) => nodeRadius(node) + 4)
+    forceCollide<PublicGraphNode>((node) =>
+      nodeRadius(node) + (node.role === "component" ? 1.8 : 4),
+    )
       .iterations(2) as never,
   );
-
-  let anchoredNodes: PublicGraphNode[] = [];
-  const anchorForce = ((alpha: number) => {
-    for (const node of anchoredNodes) {
-      const strength =
-        node.role === "root"
-          ? 0.42
-          : node.role === "domain"
-            ? 0.34
-            : node.role === "cluster"
-              ? 0.2
-              : 0.07;
-      node.vx = (node.vx ?? 0) + (node.anchorX - (node.x ?? 0)) * strength * alpha;
-      node.vy = (node.vy ?? 0) + (node.anchorY - (node.y ?? 0)) * strength * alpha;
-    }
-  }) as ((alpha: number) => void) & {
-    initialize: (nodes: NodeObject[]) => void;
+  const anchorStrength = (node: PublicGraphNode) => {
+    if (node.role === "root") return 0.28;
+    if (node.role === "domain") return 0.24;
+    if (node.role === "cluster") return 0.115;
+    return 0.042;
   };
-  anchorForce.initialize = (nodes) => {
-    anchoredNodes = nodes as PublicGraphNode[];
-  };
-  graph.d3Force("domain-anchor", anchorForce);
+  graph.d3Force(
+    "x",
+    forceX<PublicGraphNode>((node) => node.anchorX).strength(anchorStrength) as never,
+  );
+  graph.d3Force(
+    "y",
+    forceY<PublicGraphNode>((node) => node.anchorY).strength(anchorStrength) as never,
+  );
 }
 
 function drawNode(
   node: PublicGraphNode,
   context: CanvasRenderingContext2D,
   selected: string | undefined,
-  selectedDomain: string | undefined,
+  connected: Set<string>,
 ) {
   const radius = nodeRadius(node);
   const isSelected = selected === node.id;
-  const isContext =
-    selectedDomain && node.role !== "root" && node.domainId !== selectedDomain;
+  const isContext = Boolean(selected && node.role !== "root" && !connected.has(node.id));
   context.save();
   context.globalAlpha = isContext ? 0.28 : node.role === "component" ? 0.92 : 0.98;
   context.beginPath();
@@ -397,6 +356,43 @@ function drawNode(
     context.stroke();
   }
   context.restore();
+}
+
+function linkTouchesSelection(
+  link: PublicGraphLink,
+  selected: string | undefined,
+) {
+  if (!selected) return false;
+  return endpointId(link.source) === selected || endpointId(link.target) === selected;
+}
+
+function graphLinkColour(
+  link: PublicGraphLink,
+  selected: string | undefined,
+) {
+  if (selected && !linkTouchesSelection(link, selected)) {
+    return "rgba(120,130,143,.045)";
+  }
+  if (link.kind === "bridge") {
+    return selected ? "rgba(241,244,248,.9)" : "rgba(218,223,230,.36)";
+  }
+  const target = typeof link.target === "object" ? link.target : undefined;
+  if (!target) return "rgba(174,176,170,.2)";
+  return colourWithAlpha(
+    target.colour,
+    selected ? 0.82 : target.role === "domain" ? 0.3 : 0.24,
+  );
+}
+
+function graphLinkWidth(
+  link: PublicGraphLink,
+  selected: string | undefined,
+) {
+  if (selected && !linkTouchesSelection(link, selected)) return 0.3;
+  if (selected) return 1.9;
+  if (link.kind === "bridge") return 0.78;
+  const target = typeof link.target === "object" ? link.target : undefined;
+  return target?.role === "component" ? 0.58 : 0.76;
 }
 
 function labelTier(
@@ -431,20 +427,21 @@ function wrapLabel(label: string, maxCharacters: number, maxLines: number) {
   return visible;
 }
 
-export function CapabilityForceGraph({
-  className,
-  focus,
-  model,
-  onReady,
-  onSelect,
-}: CapabilityForceGraphProps) {
+export const CapabilityForceGraph = forwardRef<
+  CapabilityForceGraphHandle,
+  CapabilityForceGraphProps
+>(function CapabilityForceGraph(
+  { className, focus, model, onReady, onSelect },
+  ref,
+) {
   const host = useRef<HTMLDivElement>(null);
   const graphInstance = useRef<ForceGraphInstance | null>(null);
   const currentNodes = useRef<PublicGraphNode[]>([]);
   const focusType = useRef(focus.type);
   const fitTimer = useRef<number | undefined>(undefined);
   const selected = useRef<string | undefined>(undefined);
-  const selectedDomain = useRef<string | undefined>(undefined);
+  const connected = useRef(new Set<string>());
+  const dragCount = useRef(0);
   const onReadyRef = useRef(onReady);
   const onSelectRef = useRef(onSelect);
   const [ready, setReady] = useState(false);
@@ -454,16 +451,50 @@ export function CapabilityForceGraph({
   onSelectRef.current = onSelect;
 
   const graphModel = useMemo(() => buildPublicGraph(model), [model]);
-  const presentation = useMemo(
-    () => visiblePublicGraph(graphModel, model, focus),
-    [focus, graphModel, model],
-  );
-  selected.current = presentation.selectedId;
-  const selectedNode = presentation.selectedId
-    ? graphModel.nodeById.get(presentation.selectedId)
-    : undefined;
-  selectedDomain.current =
-    selectedNode?.role === "domain" ? selectedNode.id : selectedNode?.domainId;
+  selected.current = selectedId(focus);
+  connected.current = connectedNodeIds(graphModel, selected.current);
+
+  function fitGraph(duration = 500) {
+    const graph = graphInstance.current;
+    const graphElement = host.current;
+    if (!graph || !graphElement) return;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    graph.zoomToFit(
+      reducedMotion ? 1 : duration,
+      graphElement.clientWidth < 600 ? 176 : 92,
+    );
+  }
+
+  useImperativeHandle(ref, () => ({
+    arrange() {
+      const graph = graphInstance.current;
+      if (!graph) return;
+      configureForces(graph);
+      graph.d3ReheatSimulation();
+    },
+    fit() {
+      fitGraph();
+    },
+    reset() {
+      const graph = graphInstance.current;
+      if (!graph) return;
+      for (const node of currentNodes.current) {
+        node.anchorX = node.baseAnchorX;
+        node.anchorY = node.baseAnchorY;
+        node.x = node.baseAnchorX + (hashUnit(node.id, 7) - 0.5) * 18;
+        node.y = node.baseAnchorY + (hashUnit(node.id, 8) - 0.5) * 18;
+        node.vx = 0;
+        node.vy = 0;
+        node.fx = undefined;
+        node.fy = undefined;
+      }
+      configureForces(graph);
+      graph.d3ReheatSimulation();
+      window.setTimeout(() => fitGraph(600), 360);
+    },
+  }));
 
   useEffect(() => {
     if (!host.current) return;
@@ -477,6 +508,9 @@ export function CapabilityForceGraph({
     async function initialise() {
       const { default: createForceGraph } = await import("force-graph");
       if (cancelled) return;
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       graph = createForceGraph()(graphElement)
         .backgroundColor("#070A0F")
         .nodeId("id")
@@ -487,7 +521,7 @@ export function CapabilityForceGraph({
             rawNode as PublicGraphNode,
             context,
             selected.current,
-            selectedDomain.current,
+            connected.current,
           ),
         )
         .nodePointerAreaPaint((rawNode, colour, context) => {
@@ -515,22 +549,12 @@ export function CapabilityForceGraph({
                   : "Capability system";
           return `<div class="agila-graph-tooltip"><strong>${escapeHtml(node.label)}</strong><span>${role}</span></div>`;
         })
-        .linkColor((rawLink) => {
-          const link = rawLink as PublicGraphLink;
-          if (link.kind === "bridge") return "rgba(218,223,230,.42)";
-          const target =
-            typeof link.target === "object" ? link.target : undefined;
-          return target
-            ? colourWithAlpha(target.colour, target.role === "domain" ? 0.34 : 0.28)
-            : "rgba(174,176,170,.22)";
-        })
-        .linkWidth((rawLink) => {
-          const link = rawLink as PublicGraphLink;
-          if (link.kind === "bridge") return 0.95;
-          const target =
-            typeof link.target === "object" ? link.target : undefined;
-          return target?.role === "component" ? 0.62 : 0.82;
-        })
+        .linkColor((rawLink) =>
+          graphLinkColour(rawLink as PublicGraphLink, selected.current),
+        )
+        .linkWidth((rawLink) =>
+          graphLinkWidth(rawLink as PublicGraphLink, selected.current),
+        )
         .linkLineDash((rawLink) =>
           (rawLink as PublicGraphLink).kind === "bridge" ? [5, 6] : null,
         )
@@ -544,6 +568,29 @@ export function CapabilityForceGraph({
           if (node.role === "root") onSelectRef.current({ type: "overview" });
           else onSelectRef.current({ type: node.role, id: node.id });
         })
+        .onNodeHover((rawNode) => {
+          if (rawNode) {
+            graphElement.setAttribute(
+              "data-hovered-node",
+              (rawNode as PublicGraphNode).id,
+            );
+          } else {
+            graphElement.removeAttribute("data-hovered-node");
+          }
+        })
+        .onBackgroundClick(() => onSelectRef.current({ type: "overview" }))
+        .onNodeDrag(() => {
+          graphElement.setAttribute("data-interaction", "node-drag");
+        })
+        .onNodeDragEnd((rawNode) => {
+          const node = rawNode as PublicGraphNode;
+          node.anchorX = node.x ?? node.anchorX;
+          node.anchorY = node.y ?? node.anchorY;
+          dragCount.current += 1;
+          graphElement.setAttribute("data-interaction", "idle");
+          graphElement.setAttribute("data-last-dragged", node.id);
+          graphElement.setAttribute("data-drag-count", String(dragCount.current));
+        })
         .onRenderFramePost((context, scale) => {
           const width = graphElement.clientWidth;
           const height = graphElement.clientHeight;
@@ -552,9 +599,12 @@ export function CapabilityForceGraph({
             .map((node) => ({
               node,
               tier:
-                width < 600 &&
-                node.role === "cluster" &&
-                node.id !== selected.current
+                (selected.current &&
+                  node.role !== "root" &&
+                  !connected.current.has(node.id)) ||
+                (width < 600 &&
+                  node.role === "cluster" &&
+                  node.id !== selected.current)
                   ? 0
                   : labelTier(
                       node,
@@ -588,7 +638,7 @@ export function CapabilityForceGraph({
             height: number;
           }> = [];
           const maxLabels =
-            width < 600 ? 7 : focusType.current === "all" ? 58 : 42;
+            width < 600 ? 8 : focusType.current === "all" ? 76 : 58;
           context.save();
           context.textAlign = "center";
           context.textBaseline = "middle";
@@ -649,9 +699,17 @@ export function CapabilityForceGraph({
           }
           context.restore();
         })
-        .warmupTicks(90)
-        .cooldownTicks(260)
-        .minZoom(0.28)
+        .autoPauseRedraw(false)
+        .enableNodeDrag(true)
+        .enablePanInteraction(true)
+        .enablePointerInteraction(true)
+        .enableZoomInteraction(true)
+        .d3AlphaDecay(reducedMotion ? 0.0228 : 0.008)
+        .d3VelocityDecay(0.36)
+        .warmupTicks(reducedMotion ? 300 : 70)
+        .cooldownTicks(Infinity)
+        .cooldownTime(45_000)
+        .minZoom(0.2)
         .maxZoom(4.5);
 
       configureForces(graph);
@@ -684,11 +742,11 @@ export function CapabilityForceGraph({
         { x: node.x, y: node.y, vx: node.vx, vy: node.vy },
       ]),
     );
-    const nodes = presentation.nodes.map((node) => ({
+    const nodes = graphModel.nodes.map((node) => ({
       ...node,
       ...previous.get(node.id),
     }));
-    const links = presentation.links.map((link) => ({
+    const links = graphModel.links.map((link) => ({
       ...link,
       source: endpointId(link.source),
       target: endpointId(link.target),
@@ -702,33 +760,68 @@ export function CapabilityForceGraph({
     setReady(true);
     onReadyRef.current(nodes.length, links.length);
     if (fitTimer.current) window.clearTimeout(fitTimer.current);
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     fitTimer.current = window.setTimeout(
-      () =>
-        graph.zoomToFit(
-          reducedMotion ? 0 : 500,
-          host.current && host.current.clientWidth < 600
-            ? 175
-            : focus.type === "all"
-              ? 112
-              : 124,
-        ),
-      reducedMotion ? 40 : 420,
+      () => fitGraph(reducedMotion ? 0 : 620),
+      reducedMotion ? 40 : 460,
     );
-  }, [engineReady, focus, presentation]);
+  }, [engineReady, graphModel]);
+
+  useEffect(() => {
+    const graph = graphInstance.current;
+    if (!graph || !engineReady) return;
+    graph
+      .nodeCanvasObject((rawNode, context) =>
+        drawNode(
+          rawNode as PublicGraphNode,
+          context,
+          selected.current,
+          connected.current,
+        ),
+      )
+      .linkColor((rawLink) =>
+        graphLinkColour(rawLink as PublicGraphLink, selected.current),
+      )
+      .linkWidth((rawLink) =>
+        graphLinkWidth(rawLink as PublicGraphLink, selected.current),
+      );
+
+    const activeNode = selected.current
+      ? currentNodes.current.find((node) => node.id === selected.current)
+      : undefined;
+    if (activeNode && Number.isFinite(activeNode.x) && Number.isFinite(activeNode.y)) {
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      graph.centerAt(
+        activeNode.x,
+        activeNode.y,
+        reducedMotion ? 1 : 420,
+      );
+      const minimumZoom = activeNode.role === "domain" ? 1.12 : 1.38;
+      if (graph.zoom() < minimumZoom) {
+        graph.zoom(minimumZoom, reducedMotion ? 1 : 420);
+      }
+    }
+  }, [engineReady, focus, graphModel]);
 
   return (
     <div
-      aria-label={`Interactive Agila capability force graph showing ${presentation.nodes.length} nodes and ${presentation.links.length} connections.`}
+      aria-label={`Interactive Agila capability force graph showing ${graphModel.nodes.length} nodes and ${graphModel.links.length} connections.`}
       className={className}
-      data-link-count={presentation.links.length}
+      data-drag-count="0"
+      data-interaction="idle"
+      data-link-count={graphModel.links.length}
       data-colour-mode="domain"
       data-layout="clustered-islands"
-      data-node-count={presentation.nodes.length}
+      data-node-count={graphModel.nodes.length}
+      data-node-drag="enabled"
       data-ready={ready}
       data-renderer="force-graph"
       ref={host}
       role="img"
     />
   );
-}
+});

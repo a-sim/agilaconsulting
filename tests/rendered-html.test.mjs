@@ -8,6 +8,17 @@ async function exportedHtml(name) {
   return readFile(new URL(`../out/${name}`, import.meta.url), "utf8");
 }
 
+test("keeps public website copy free of em dashes", async () => {
+  for (const page of [
+    "index.html",
+    "capabilities/index.html",
+    "fit4ai/index.html",
+    "legal/index.html",
+  ]) {
+    assert.doesNotMatch(await exportedHtml(page), /\u2014/, page);
+  }
+});
+
 test("exports the production homepage and metadata", async () => {
   const html = await exportedHtml("index.html");
 

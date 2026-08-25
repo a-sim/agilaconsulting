@@ -98,7 +98,7 @@ export default function Fit4AiPage() {
           <aside className={styles.heroAside} aria-labelledby="starting-points-title">
             <p className={styles.asideLabel}>Start with what you know</p>
             <h2 id="starting-points-title">
-              Bring a challenge, a need, an idea—or the whole opportunity list.
+              Bring a challenge, a need, an idea, or the whole opportunity list.
             </h2>
             <ul>
               {startingPoints.map((item) => (
@@ -206,7 +206,7 @@ export default function Fit4AiPage() {
             <div className={styles.differenceHeading}>
               <p className="section-index">03 / Why Agila</p>
               <h2 id="agila-difference-title">
-                Independent and vendor-neutral—grounded in the system around AI.
+                Independent and vendor-neutral, grounded in the system around AI.
               </h2>
             </div>
             <div className={styles.differenceFormula}>
@@ -289,7 +289,7 @@ export default function Fit4AiPage() {
             <p className="section-index">Start with the opportunity landscape</p>
             <h2 id="fit4ai-cta-title">Where could AI make a material difference?</h2>
             <p>
-              Bring the challenges, needs and ideas already on the table—even
+              Bring the challenges, needs and ideas already on the table, even
               if they are still incomplete. Agila can help turn them into a
               structured assessment conversation.
             </p>

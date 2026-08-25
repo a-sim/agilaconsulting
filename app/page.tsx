@@ -194,14 +194,26 @@ export default function Home() {
             <h2>Fit 4 AI</h2>
           </div>
           <div className="fit4ai-panel">
-            <p>
-              Agila is pre-accredited by Luxinnovation for the Fit 4 AI
-              programme, which helps eligible organisations assess AI
-              opportunities and define an implementation roadmap.
-            </p>
-            <ArrowLink href={site.fit4AiUrl} external>
-              View the official Fit 4 AI programme
-            </ArrowLink>
+            <div>
+              <h3>Test where AI adds value before committing to implementation.</h3>
+              <p>
+                Fit 4 AI is an independent diagnostic for examining business
+                challenges, AI ideas and a portfolio of candidate use cases,
+                then turning the evidence into priorities and an actionable
+                roadmap.
+              </p>
+              <p className="fit4ai-status">
+                Agila is pre-accredited by Luxinnovation for Fit 4 AI. Full
+                accreditation follows the first successful assignment and
+                applicable review.
+              </p>
+            </div>
+            <div className="fit4ai-actions">
+              <ArrowLink href="/fit4ai/">Explore Fit 4 AI with Agila</ArrowLink>
+              <ArrowLink href={site.fit4AiOfficialUrl} external>
+                View the official programme
+              </ArrowLink>
+            </div>
           </div>
         </section>
 

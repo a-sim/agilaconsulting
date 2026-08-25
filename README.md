@@ -24,6 +24,8 @@ The public routes are:
 
 - `/` - positioning, capabilities, approach, experience, Fit 4 AI, founder and
   contact
+- `/capabilities/` - interactive public capability system and complete index
+- `/fit4ai/` - independent Fit 4 AI diagnostic overview and enquiry route
 - `/legal` - legal notice and privacy information
 
 ## Editing content

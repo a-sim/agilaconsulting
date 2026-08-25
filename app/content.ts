@@ -2,12 +2,12 @@ export const site = {
   canonicalUrl: "https://agilaconsult.com",
   email: "alejandro.simo@agilaconsult.com",
   linkedin: "https://www.linkedin.com/in/asimovesperinas/",
-  fit4AiUrl:
-    "https://luxinnovation.lu/digitalise-activities/digital-cyber-maturity/fit-4-ai",
+  fit4AiOfficialUrl: "https://luxinnovation.lu/assess-and-accelerate/fit4ai",
 };
 
 export const navigation = [
   { label: "Capabilities", href: "/capabilities/" },
+  { label: "Fit 4 AI", href: "/fit4ai/" },
   { label: "Approach", href: "#approach" },
   { label: "Experience", href: "#experience" },
   { label: "About", href: "#about" },

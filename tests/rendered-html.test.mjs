@@ -38,6 +38,12 @@ test("exports the production homepage and metadata", async () => {
   assert.match(html, /Capabilities that work as a system/);
   assert.match(html, /agila-capability-system\.webp/);
   assert.match(html, /href="\/capabilities\/"/);
+  assert.match(html, /href="\/fit4ai\/"/);
+  assert.match(html, /Explore Fit 4 AI with Agila/);
+  assert.match(
+    html,
+    /https:\/\/luxinnovation\.lu\/assess-and-accelerate\/fit4ai/,
+  );
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /Agila Consulting S\.à r\.l\./);
   assert.match(html, /agila-wordmark-black\.svg\?v=20260805/);
@@ -46,6 +52,47 @@ test("exports the production homepage and metadata", async () => {
   assert.doesNotMatch(html, /Start with the decision|Frame the decision/i);
   assert.doesNotMatch(html, /codex-preview|loading skeleton|placeholder/i);
   assert.doesNotMatch(html, /world-class|revolutionary|cutting-edge/i);
+});
+
+test("exports the Fit 4 AI diagnostic page with publication-safe claims", async () => {
+  const html = await exportedHtml("fit4ai/index.html");
+
+  assert.match(html, /Is AI worth it\?/);
+  assert.match(html, /independent, vendor-neutral diagnostic/i);
+  assert.match(html, /before committing to technology or implementation/i);
+  assert.match(html, /A single assessment can examine multiple candidate use cases/i);
+  assert.match(html, /Business challenges/);
+  assert.match(html, /AI and data needs/);
+  assert.match(html, /Implementation ideas/);
+  assert.match(html, /Business value/);
+  assert.match(html, /Technical feasibility/);
+  assert.match(html, /Data readiness/);
+  assert.match(html, /Risks and governance/);
+  assert.match(html, /Alternatives and dependencies/);
+  assert.match(html, /Invest/);
+  assert.match(html, /Defer/);
+  assert.match(html, /Reject/);
+  assert.match(html, /detailed, costed roadmap/i);
+  assert.match(html, /Operating reality/);
+  assert.match(html, /Data and architecture/);
+  assert.match(html, /Governed execution/);
+  assert.match(html, /Any later implementation is a separate scope and commitment/i);
+  assert.match(html, /Public support may be available to eligible Luxembourg/);
+  assert.match(html, /Agila is pre-accredited by Luxinnovation for Fit 4 AI/);
+  assert.match(
+    html,
+    /Full accreditation follows the first successful assignment and applicable review/,
+  );
+  assert.match(html, /Explore your AI opportunity landscape/);
+  assert.match(html, /href="\/#contact"/);
+  assert.match(
+    html,
+    /https:\/\/luxinnovation\.lu\/assess-and-accelerate\/fit4ai/,
+  );
+  assert.match(html, /canonical.*\/fit4ai\//i);
+  assert.doesNotMatch(html, /one real decision|start with one decision/i);
+  assert.doesNotMatch(html, /\b50%\b|\b30%\b|10,?000|200,?000/i);
+  assert.doesNotMatch(html, /fully accredited|official partner/i);
 });
 
 test("exports the public interactive capability system", async () => {
@@ -177,6 +224,8 @@ test("ships Azure configuration, brand and discovery assets", async () => {
   assert.match(robots, /Allow: \//);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/legal/);
   assert.match(sitemap, /https:\/\/agilaconsult\.com\/capabilities\//);
+  assert.match(sitemap, /https:\/\/agilaconsult\.com\/fit4ai\//);
+  assert.match(sitemap, /<lastmod>2026-08-25<\/lastmod>/);
   assert.match(security, /Contact: mailto:alejandro\.simo@agilaconsult\.com/);
   assert.doesNotMatch(security, /mailto:alejandro@agilaconsult\.com/);
   assert.match(blackLogo, /AGILA wordmark/);

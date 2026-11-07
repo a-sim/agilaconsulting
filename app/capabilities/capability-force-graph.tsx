@@ -1,11 +1,8 @@
 "use client";
 
 import { forceCollide, forceX, forceY } from "d3-force";
-import type {
-  ForceGraphInstance,
-  LinkObject,
-  NodeObject,
-} from "force-graph";
+import type ForceGraph from "force-graph";
+import type { LinkObject, NodeObject } from "force-graph";
 import {
   forwardRef,
   useEffect,
@@ -281,7 +278,7 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-function configureForces(graph: ForceGraphInstance) {
+function configureForces(graph: ForceGraph) {
   graph.d3Force("charge")?.strength?.((node: PublicGraphNode) => {
     if (node.role === "root") return -860;
     if (node.role === "domain") return -460;
@@ -435,7 +432,7 @@ export const CapabilityForceGraph = forwardRef<
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null);
-  const graphInstance = useRef<ForceGraphInstance | null>(null);
+  const graphInstance = useRef<ForceGraph | null>(null);
   const currentNodes = useRef<PublicGraphNode[]>([]);
   const focusType = useRef(focus.type);
   const fitTimer = useRef<number | undefined>(undefined);
@@ -499,19 +496,19 @@ export const CapabilityForceGraph = forwardRef<
   useEffect(() => {
     if (!host.current) return;
     const graphElement: HTMLDivElement = host.current;
-    let graph: ForceGraphInstance | undefined;
+    let graph: ForceGraph | undefined;
     let observer: ResizeObserver | undefined;
     let cancelled = false;
     setReady(false);
     setEngineReady(false);
 
     async function initialise() {
-      const { default: createForceGraph } = await import("force-graph");
+      const { default: ForceGraphConstructor } = await import("force-graph");
       if (cancelled) return;
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
-      graph = createForceGraph()(graphElement)
+      graph = new ForceGraphConstructor(graphElement)
         .backgroundColor("#070A0F")
         .nodeId("id")
         .nodeRelSize(4)
